@@ -1,0 +1,1355 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KOKOHOME</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* Surface — monochrome */
+  --bg:#f4f4f4;--paper:#ffffff;--card:#ffffff;--border:#e5e5e5;
+  /* Ink hierarchy */
+  --ink:#0a0a0a;--ink2:#3a3a3a;--ink3:#737373;--ink4:#a3a3a3;
+  /* Brand accents */
+  --primary:#c97090;--primary-bg:#f8e9ee;--primary-border:#e8b8c8;--primary-hover:#b85d7e;
+  --secondary:#c98d30;--secondary-bg:#faf0dc;--secondary-border:#e8c890;--secondary-hover:#a87520;
+  /* Folders — gray scale */
+  --folder-pregnancy:#262626;--folder-housing:#404040;--folder-repair:#525252;
+  --folder-birth-pl:#737373;--folder-birth-ua:#8a8a8a;
+  --folder-active-bg:#ededed;
+  /* Categories — accent colors matching pastel cards */
+  --cat-milestone:#e07a20;  /* peach → orange */
+  --cat-medical:#c97090;    /* pink → rose */
+  --cat-finance:#5b80d4;    /* blue → indigo */
+  --cat-domestic:#3d9966;   /* green → emerald */
+  --cat-housing:#5b80d4;    /* blue (alias) */
+  --cat-utility:#c98d30;    /* cream → amber */
+  --cat-renovation:#3d9966; /* green (alias) */
+  /* Card pastels — categorized colors */
+  --card-milestone:#fff3e0;--card-medical:#fbeaf0;--card-finance:#e8edf8;
+  --card-domestic:#e8f4ec;--card-utility:#f7f3e8;
+  /* Status (mono) */
+  --green:#171717;--red:#525252;--amber:#737373;
+  --status-done-bg:#f0f0f0;--status-done-border:#a3a3a3;
+  --status-partial-bg:#f4f4f4;--status-partial-border:#bababa;
+  --status-skipped-bg:#f7f7f7;--status-skipped-border:#d4d4d4;
+  /* Cost variance */
+  --cost-under:#171717;--cost-under-bg:#f0f0f0;
+  --cost-over:#525252;--cost-over-bg:#fafafa;
+  /* Sizing */
+  --sw:220px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;display:flex;}
+
+/* SIDEBAR */
+.sb{width:var(--sw);flex-shrink:0;background:var(--paper);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;}
+.sb-logo{padding:16px 14px 12px;border-bottom:1px solid var(--border);}
+.sb-logo h1{font-family:'Plus Jakarta Sans',sans-serif;font-size:20px;font-weight:700;line-height:1.2;letter-spacing:0.04em;color:var(--ink);}
+.sb-logo p{font-size:12px;color:var(--ink3);margin-top:1px;}
+.sb-sec{padding:10px 10px 3px;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--ink3);font-weight:500;}
+.fb{display:flex;align-items:center;gap:8px;padding:7px 9px;border-radius:9px;cursor:pointer;transition:background .12s;margin:0 5px 1px;border:none;background:transparent;width:calc(100% - 10px);text-align:left;position:relative;}
+.fb:hover{background:var(--paper);}
+.fb.act{background:var(--fac,var(--folder-active-bg));}
+.fi{width:28px;height:28px;border-radius:7px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:18px;}
+.fd{flex:1;min-width:0;}
+.fn{font-size:14px;font-weight:500;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.fb.act .fn{color:var(--fac-text,var(--ink));}
+.fm{font-size:11px;color:var(--ink3);}
+.sb-div{height:1px;background:var(--border);margin:6px 10px;}
+.add-fb{display:flex;align-items:center;gap:7px;padding:7px 9px;margin:2px 5px;border-radius:8px;border:1.5px dashed var(--border);background:transparent;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;color:var(--ink3);width:calc(100% - 10px);transition:all .15s;}
+.add-fb:hover{border-color:var(--ink2);color:var(--ink2);background:var(--paper);}
+.sb-foot{margin-top:auto;padding:10px 14px;font-size:12px;color:var(--ink3);border-top:1px solid var(--border);}
+.del-folder-btn{position:absolute;right:6px;top:50%;transform:translateY(-50%);opacity:0;width:18px;height:18px;border-radius:4px;border:none;background:transparent;cursor:pointer;color:var(--ink3);display:flex;align-items:center;justify-content:center;font-size:13px;}
+.fb:hover .del-folder-btn{opacity:1;}
+.del-folder-btn:hover{background:var(--bg);color:var(--ink2);}
+
+/* MAIN */
+.main{margin-left:var(--sw);flex:1;min-width:0;display:flex;flex-direction:column;}
+
+/* TOPBAR */
+.tb{background:var(--card);border-bottom:1px solid var(--border);padding:0 18px;height:50px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:50;}
+.tb-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:19px;font-weight:600;letter-spacing:-.3px;display:flex;align-items:center;gap:8px;}
+.tb-emoji{font-size:22px;}
+.pbar{height:3px;position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.05);}
+.pfill{height:100%;transition:width .4s;border-radius:2px;}
+.hstats{font-size:13px;color:var(--ink3);}
+.hstats b{color:var(--ink);font-weight:500;}
+.vtoggle{display:flex;background:var(--folder-active-bg);border-radius:9px;padding:3px;gap:2px;margin-left:auto;flex-shrink:0;}
+.vbtn{padding:5px 10px;border-radius:6px;border:none;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;background:transparent;color:var(--ink3);transition:all .15s;white-space:nowrap;}
+.vbtn.active{background:var(--card);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.1);}
+.sync-btn{display:flex;align-items:center;gap:4px;padding:5px 10px;border-radius:7px;border:none;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;}
+.pull-btn{background:var(--folder-active-bg);color:var(--ink2);}
+.pull-btn:hover{background:#e0e0e0;}
+.push-btn{background:var(--ink);color:#fff;}
+.push-btn:hover{background:var(--ink2);}
+.push-btn.saving{background:var(--ink2);}
+.push-btn.error{background:var(--ink2);}
+.add-btn{display:flex;align-items:center;gap:5px;padding:5px 10px;border-radius:7px;border:none;background:var(--ink);color:white;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;flex-shrink:0;}
+.add-btn:hover{opacity:.82;}
+
+/* CONTENT */
+.content{flex:1;padding:18px 18px 60px;}
+.inner{max-width:820px;margin:0 auto;}
+
+/* BUDGET DASH */
+.bdash{background:var(--card);border:1px solid var(--border);border-radius:13px;margin-bottom:16px;overflow:hidden;}
+.bdash-hdr{padding:12px 16px 10px;display:flex;align-items:center;justify-content:space-between;}
+.bdash-hdr h3{font-family:'Plus Jakarta Sans',sans-serif;font-size:17px;font-weight:600;}
+.btoggle{font-size:12px;color:var(--ink3);cursor:pointer;padding:2px 7px;border-radius:5px;border:1px solid var(--border);}
+.btoggle:hover{background:var(--paper);}
+.bgrid{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--border);}
+.bstat{padding:12px 14px;border-right:1px solid var(--border);}
+.bstat:last-child{border-right:none;}
+.bstat-lbl{font-size:11px;color:var(--ink3);text-transform:uppercase;letter-spacing:.7px;margin-bottom:3px;}
+.bstat-val{font-family:'Plus Jakarta Sans',sans-serif;font-size:24px;font-weight:600;line-height:1;}
+.bstat-val.green{color:var(--green);}
+.bstat-val.red{color:var(--red);}
+.bbar-wrap{padding:8px 16px 12px;border-top:1px solid var(--border);}
+.bbar-labels{display:flex;justify-content:space-between;font-size:11px;color:var(--ink3);margin-bottom:4px;}
+.bbar-bg{height:5px;background:var(--paper);border-radius:3px;overflow:hidden;}
+.bbar-fill{height:100%;border-radius:3px;transition:width .5s;}
+
+/* STATS ROW */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:14px;}
+.sc{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 12px;text-align:center;}
+.sn{font-family:'Plus Jakarta Sans',sans-serif;font-size:24px;font-weight:600;line-height:1;margin-bottom:1px;}
+.sl{font-size:11px;color:var(--ink3);}
+
+/* LEGEND */
+.legend{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;padding:8px 12px;background:var(--card);border-radius:10px;border:1px solid var(--border);align-items:center;}
+.li{display:flex;align-items:center;gap:4px;font-size:13px;color:var(--ink2);}
+.ld{width:6px;height:6px;border-radius:50%;}
+.lhint{margin-left:auto;font-size:11px;color:var(--ink3);font-style:italic;}
+
+/* TRIMESTER / SECTION BLOCK */
+.trim{margin-bottom:10px;border-radius:12px;overflow:hidden;border:1px solid var(--border);background:var(--paper);}
+.thdr{padding:16px 24px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;}
+.thdr h2{font-family:'Plus Jakarta Sans',sans-serif;font-size:17px;font-weight:600;letter-spacing:-.2px;}
+.thdr .wk{font-size:12px;font-weight:400;opacity:.6;margin-left:5px;font-family:'Plus Jakarta Sans',sans-serif;}
+.tcnt{font-size:13px;color:var(--ink3);margin-right:3px;}
+.chev{width:14px;height:14px;transition:transform .2s;opacity:.4;flex-shrink:0;}
+.collapsed .chev{transform:rotate(-90deg);}
+.tbody{padding:8px 16px 16px;}
+.collapsed .tbody{display:none;}
+.slbl{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--ink3);font-weight:500;padding:7px 4px 2px;}
+
+/* TASK CARD */
+.tw{margin-bottom:3px;}
+.card{border-radius:9px;overflow:hidden;border:1px solid rgba(0,0,0,.06);transition:box-shadow .15s;}
+.card:hover{box-shadow:0 2px 8px rgba(0,0,0,.07);}
+.task-main-row{display:flex;align-items:flex-start;gap:8px;padding:9px 9px;}
+.cb{width:17px;height:17px;border-radius:4px;border:1.5px solid var(--ink4);flex-shrink:0;display:flex;align-items:center;justify-content:center;background:white;cursor:pointer;transition:all .15s;margin-top:1px;}
+.cb.cb-done{border-color:transparent;}
+.ck{display:none;width:8px;height:8px;}.cb.cb-done .ck{display:block;}
+.cdot{width:6px;height:6px;border-radius:50%;flex-shrink:0;margin-top:4px;}
+.cat-medical{background:var(--cat-medical);}.cat-finance{background:var(--cat-finance);}.cat-domestic{background:var(--cat-domestic);}.cat-milestone{background:var(--cat-milestone);}
+.cat-housing{background:var(--cat-housing);}.cat-utility{background:var(--cat-utility);}.cat-renovation{background:var(--cat-renovation);}
+.task-body{flex:1;min-width:0;}
+.task-title-row{display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-bottom:1px;}
+.task-title{font-size:14px;font-weight:400;color:var(--ink);line-height:1.3;}
+.task-title.task-done{text-decoration:line-through;opacity:.45;}
+.task-sub-note{font-size:13px;color:var(--ink2);line-height:1.4;margin-top:1px;}
+.task-week-lbl{font-size:11px;color:var(--ink3);margin-top:2px;}
+.cost-right{display:flex;flex-direction:column;align-items:flex-end;gap:2px;flex-shrink:0;min-width:85px;padding-left:8px;border-left:1px solid rgba(0,0,0,.07);margin-left:2px;}
+.cost-row-line{display:flex;align-items:center;gap:4px;}
+.cost-lbl{font-size:11px;color:var(--ink3);}
+.cost-num{font-size:14px;font-weight:500;color:var(--ink);}
+.cost-diff-badge{font-size:11px;padding:1px 5px;border-radius:4px;white-space:nowrap;}
+.cost-diff-badge.under{background:var(--cost-under-bg);color:var(--cost-under);}
+.cost-diff-badge.over{background:var(--cost-over-bg);color:var(--cost-over);}
+.sbadge{flex-shrink:0;padding:1px 6px;border-radius:6px;font-size:11px;font-weight:500;}
+.sbadge.done{background:var(--status-done-bg);color:var(--green);border:1px solid var(--status-done-border);}
+.sbadge.partial{background:var(--status-partial-bg);color:var(--amber);border:1px solid var(--status-partial-border);}
+.sbadge.skipped{background:var(--status-skipped-bg);color:var(--red);border:1px solid var(--status-skipped-border);}
+.custom-badge{font-size:10px;padding:1px 5px;border-radius:4px;background:var(--folder-active-bg);color:var(--ink3);border:1px solid var(--border);}
+.row-btns{display:flex;gap:1px;flex-shrink:0;opacity:0;transition:opacity .15s;}
+.card:hover .row-btns{opacity:1;}
+.ibtn{width:20px;height:20px;border-radius:4px;border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--ink3);}
+.ibtn:hover{background:rgba(0,0,0,.07);color:var(--ink);}
+.ibtn.del:hover{background:var(--bg);color:var(--ink2);}
+
+/* GANTT */
+#timelineView .content{overflow-x:auto;}
+.gantt-wrap{min-width:1100px;}
+.g-budget{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:10px;}
+.gb{background:var(--card);border:1px solid var(--border);border-radius:9px;padding:9px 12px;}
+.gb-lbl{font-size:11px;color:var(--ink3);text-transform:uppercase;letter-spacing:.7px;margin-bottom:2px;}
+.gb-val{font-family:'Plus Jakarta Sans',sans-serif;font-size:20px;font-weight:600;}
+.gb-val.green{color:var(--green);}.gb-val.red{color:var(--red);}
+.g-ms-row{display:flex;margin-left:180px;height:22px;position:relative;margin-bottom:1px;}
+.g-msflag{position:absolute;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;}
+.g-mslbl{font-size:10px;font-weight:500;white-space:nowrap;padding:1px 4px;border-radius:3px;border:1px solid var(--ink4);background:var(--card-milestone);color:var(--ink);}
+.g-msstem{width:1px;height:4px;background:var(--cat-milestone);margin-top:1px;}
+.g-bands{display:flex;margin-left:180px;height:17px;margin-bottom:1px;}
+.gband{display:flex;align-items:center;padding:0 6px;font-size:10px;font-weight:500;}
+.g-weeks{display:flex;margin-left:180px;border-bottom:1px solid var(--border);margin-bottom:3px;}
+.gwc{flex:1;text-align:center;border-right:1px solid transparent;}
+.gwc.major{border-right-color:rgba(0,0,0,.08);}
+.gwn{font-size:10px;padding:2px 0;line-height:1;}
+.gbody{position:relative;}
+.grow{display:flex;align-items:center;margin-bottom:2px;min-height:26px;}
+.glbl{width:180px;flex-shrink:0;padding-right:8px;font-size:12px;color:var(--ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:right;cursor:pointer;line-height:1.2;}
+.glbl:hover{color:var(--ink);}
+.glbl.mslbl{font-weight:600;color:var(--ink);}
+.glbl.donelbl{text-decoration:line-through;opacity:.45;}
+.gtrack{flex:1;position:relative;height:22px;display:flex;align-items:center;background-image:repeating-linear-gradient(90deg,transparent,transparent calc(var(--ww) - 1px),rgba(0,0,0,.04) calc(var(--ww) - 1px),rgba(0,0,0,.04) var(--ww));background-size:var(--ww) 100%;}
+.gbar{position:absolute;height:16px;border-radius:5px;display:flex;align-items:center;padding:0 6px;font-size:10px;font-weight:500;white-space:nowrap;overflow:hidden;cursor:pointer;transition:filter .15s;border:1.5px solid transparent;}
+.gbar:hover{filter:brightness(.92);}
+.gbar.done{opacity:.38;}
+.gbar.cat-medical{background:var(--card-medical);border-color:var(--cat-medical);color:var(--ink);}
+.gbar.cat-finance,.gbar.cat-housing{background:var(--card-finance);border-color:var(--cat-finance);color:var(--ink);}
+.gbar.cat-domestic,.gbar.cat-renovation{background:var(--card-domestic);border-color:var(--cat-domestic);color:var(--ink);}
+.gbar.cat-milestone,.gbar.cat-utility{background:var(--card-milestone);border-color:var(--cat-milestone);color:var(--ink);}
+.gcost{position:absolute;bottom:0;height:2px;border-radius:1px;pointer-events:none;}
+.gcost.spent{background:var(--green);opacity:.6;}
+.gcost.over{background:var(--red);opacity:.6;}
+.today-line{position:absolute;top:0;bottom:0;width:2px;background:rgba(100,80,200,.4);pointer-events:none;z-index:10;border-radius:1px;}
+.today-line::after{content:'today';position:absolute;top:-14px;left:50%;transform:translateX(-50%);font-size:9px;font-weight:600;color:rgba(80,60,180,.75);white-space:nowrap;}
+.g-bottom{margin-top:14px;padding:10px 12px;background:var(--card);border-radius:10px;border:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.g-bottom label{font-size:13px;color:var(--ink3);}
+.g-bottom input[type=date]{border:1.5px solid var(--border);border-radius:6px;padding:3px 7px;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;background:var(--paper);color:var(--ink);outline:none;}
+
+/* MODALS */
+.mbg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:1000;align-items:center;justify-content:center;padding:16px;}
+.mbg.open{display:flex;}
+.modal{background:var(--card);border-radius:15px;padding:20px;width:100%;max-width:480px;box-shadow:0 20px 60px rgba(0,0,0,.18);animation:su .18s ease;max-height:92vh;overflow-y:auto;}
+@keyframes su{from{transform:translateY(10px);opacity:0}to{transform:translateY(0);opacity:1}}
+.modal h3{font-family:'Plus Jakarta Sans',sans-serif;font-size:19px;font-weight:600;margin-bottom:13px;}
+.msec{font-size:11px;font-weight:500;color:var(--ink3);text-transform:uppercase;letter-spacing:.8px;margin:12px 0 6px;padding-bottom:4px;border-bottom:1px solid var(--border);}
+.mf{margin-bottom:10px;}
+.mf label{display:block;font-size:11px;font-weight:500;color:var(--ink3);text-transform:uppercase;letter-spacing:.7px;margin-bottom:3px;}
+.mf input,.mf textarea{width:100%;border:1.5px solid rgba(0,0,0,.1);border-radius:7px;padding:7px 9px;font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;color:var(--ink);background:var(--paper);outline:none;transition:border-color .15s;}
+.mf input:focus,.mf textarea:focus{border-color:rgba(0,0,0,.25);}
+.mf textarea{min-height:58px;resize:vertical;}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
+.cur{position:relative;}.cur input{padding-left:26px;}
+.cur-sym{position:absolute;left:9px;top:50%;transform:translateY(-50%);font-size:14px;color:var(--ink3);pointer-events:none;}
+.pill-row{display:flex;gap:5px;flex-wrap:wrap;}
+.pill{padding:5px 10px;border-radius:15px;font-size:13px;font-weight:500;border:1.5px solid rgba(0,0,0,.1);cursor:pointer;background:var(--paper);color:var(--ink2);transition:all .15s;}
+.pill.active{border-color:transparent;color:white;background:var(--ink2);}
+.pill[data-s=done].active{background:var(--ink);}
+.pill[data-s=partial].active{background:var(--ink2);}
+.pill[data-s=skipped].active{background:var(--ink3);}
+.pill[data-c=medical].active{background:var(--cat-medical);}
+.pill[data-c=finance].active,.pill[data-c=housing].active{background:var(--cat-finance);}
+.pill[data-c=domestic].active,.pill[data-c=renovation].active{background:var(--cat-domestic);}
+.pill[data-c=milestone].active,.pill[data-c=utility].active{background:var(--cat-milestone);}
+.pill[data-t=t1].active{background:#c97090;}
+.pill[data-t=t2].active{background:var(--ink2);}
+.pill[data-t=t3].active{background:var(--ink2);}
+.pill[data-t=general].active{background:var(--ink3);}
+.week-row{display:grid;grid-template-columns:1fr auto 1fr;gap:6px;align-items:center;}
+.week-sep{text-align:center;color:var(--ink3);}
+.mact{display:flex;gap:7px;justify-content:flex-end;margin-top:13px;}
+.btnc{padding:7px 12px;border-radius:6px;border:1.5px solid rgba(0,0,0,.1);background:transparent;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;cursor:pointer;color:var(--ink2);}
+.btnc:hover{background:rgba(0,0,0,.04);}
+.btns{padding:7px 14px;border-radius:6px;border:none;background:var(--ink);color:white;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;cursor:pointer;font-weight:500;}
+.btns:hover{opacity:.8;}
+.del-confirm{display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:1100;align-items:center;justify-content:center;padding:16px;}
+.del-confirm.open{display:flex;}
+.del-box{background:var(--card);border-radius:13px;padding:20px;max-width:300px;width:100%;box-shadow:0 16px 50px rgba(0,0,0,.18);animation:su .15s ease;}
+.del-box h4{font-family:'Plus Jakarta Sans',sans-serif;font-size:17px;margin-bottom:6px;}
+.del-box p{font-size:14px;color:var(--ink2);margin-bottom:14px;line-height:1.5;}
+.del-actions{display:flex;gap:7px;justify-content:flex-end;}
+.btn-del{padding:6px 13px;border-radius:6px;border:none;background:var(--ink2);color:white;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;cursor:pointer;font-weight:500;}
+/* ADD FOLDER MODAL */
+.emoji-grid{display:flex;flex-wrap:wrap;gap:6px;}
+.epick{width:36px;height:36px;border-radius:7px;border:1.5px solid var(--border);background:var(--paper);cursor:pointer;font-size:22px;display:flex;align-items:center;justify-content:center;transition:all .12s;}
+.epick:hover,.epick.active{border-color:var(--ink2);background:var(--folder-active-bg);}
+/* MOBILE */
+/* Burger button — hidden on desktop */
+.burger{display:none;width:34px;height:34px;border:none;background:transparent;cursor:pointer;flex-direction:column;justify-content:center;align-items:center;gap:4px;border-radius:7px;flex-shrink:0;padding:0;margin-right:4px;transition:background .15s;}
+.burger:hover{background:var(--folder-active-bg);}
+.burger span{display:block;width:18px;height:2px;background:var(--ink);border-radius:2px;transition:transform .25s,opacity .15s;}
+.sb-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:99;animation:fade .2s ease;}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+
+@media(max-width:700px){
+  .burger{display:flex;}
+  .sb{transform:translateX(-100%);transition:transform .25s ease;box-shadow:0 0 40px rgba(0,0,0,.15);}
+  .sb.open{transform:none;}
+  .sb.open ~ .sb-overlay{display:block;}
+  .main{margin-left:0;}
+  .bgrid{grid-template-columns:1fr 1fr;}.bstat:last-child{grid-column:span 2;}
+  .two-col{grid-template-columns:1fr;}
+  /* Animate burger to X when sidebar open */
+  .sb.open ~ .main .burger span:nth-child(1){transform:translateY(6px) rotate(45deg);}
+  .sb.open ~ .main .burger span:nth-child(2){opacity:0;}
+  .sb.open ~ .main .burger span:nth-child(3){transform:translateY(-6px) rotate(-45deg);}
+  /* Hide some text on mobile to save space */
+  .tb-title{font-size:16px;}
+  .hstats{display:none;}
+  .add-btn span{display:none;}
+}
+
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sb" id="sb">
+  <div class="sb-logo">
+    <h1>KOKOHOME</h1>
+    <p>Всі витрати під контролем</p>
+  </div>
+  <div class="sb-sec">Розділи</div>
+  <div id="folderList"></div>
+  <button class="add-fb" onclick="openAddFolder()">
+    <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M7 1v12M1 7h12"/></svg>
+    Новий розділ
+  </button>
+  <div class="sb-div"></div>
+  <div style="display:flex;gap:5px;padding:6px 6px 2px;">
+    <button onclick="manualPull()" id="pullBtn" style="flex:1;padding:7px 4px;border-radius:7px;border:1px solid rgba(255,255,255,.12);background:transparent;color:rgba(255,255,255,.5);font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;cursor:pointer;">⬇ Оновити</button>
+  </div>
+  <div class="sb-foot"><span id="syncDot" style="opacity:0.3;margin-right:4px;">●</span>KOKOHOME v3.0</div>
+</aside>
+
+<!-- MAIN -->
+<!-- Mobile overlay -->
+<div class="sb-overlay" id="sbOverlay" onclick="toggleSidebar(false)"></div>
+
+<div class="main">
+  <!-- TOPBAR -->
+  <div class="tb">
+    <button class="burger" onclick="toggleSidebar()" aria-label="Меню">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="tb-title"><span class="tb-emoji" id="tbEmoji"></span><span id="tbTitle">Завантаження...</span></div>
+    <div class="hstats"><b id="hd">0</b>/<span id="ht">0</span> · <b id="hp">0%</b></div>
+    <div class="vtoggle">
+      <button class="vbtn active" id="btnL" onclick="sw('list')">☰ Список</button>
+      <button class="vbtn" id="btnT" onclick="sw('timeline')">📅 Timeline</button>
+    </div>
+    <button class="add-btn" onclick="openAdd()">
+      <svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M7 1v12M1 7h12"/></svg>
+      Новий крок
+    </button>
+    <div class="pbar"><div class="pfill" id="pf" style="width:0%"></div></div>
+  </div>
+
+  <!-- LIST VIEW -->
+  <div id="listView" class="content" style="display:block;">
+    <div class="inner">
+      <div class="bdash" id="bdash">
+        <div class="bdash-hdr">
+          <h3>💰 Бюджет розділу</h3>
+          <div style="display:flex;align-items:center;gap:8px;margin-left:auto;">
+            <select id="curSel" onchange="setFolderCurrency(this.value)" style="padding:5px 8px;border-radius:7px;border:1px solid var(--border);background:var(--bg);font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;color:var(--ink2);cursor:pointer;outline:none;">
+              <option value="UAH">₴ UAH</option>
+              <option value="PLN">zł PLN</option>
+              <option value="USD">$ USD</option>
+              <option value="EUR">€ EUR</option>
+            </select>
+            <div class="btoggle" onclick="toggleBudget()">згорнути ▲</div>
+          </div>
+        </div>
+        <div id="bdashBody">
+          <div class="bgrid">
+            <div class="bstat"><div class="bstat-lbl">Кошторис</div><div class="bstat-val" id="bEst">—</div></div>
+            <div class="bstat"><div class="bstat-lbl">Витрачено</div><div class="bstat-val" id="bSpent">—</div></div>
+            <div class="bstat"><div class="bstat-lbl">Залишок</div><div class="bstat-val" id="bLeft">—</div></div>
+          </div>
+          <div class="bbar-wrap">
+            <div class="bbar-labels"><span>Виконання бюджету</span><span id="bBarLbl">0%</span></div>
+            <div class="bbar-bg"><div class="bbar-fill" id="bBar" style="width:0%;background:var(--ink)"></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="stats">
+        <div class="sc"><div class="sn" id="sd">0</div><div class="sl">виконано</div></div>
+        <div class="sc"><div class="sn" id="st">0</div><div class="sl">всього</div></div>
+        <div class="sc"><div class="sn" id="sp">0%</div><div class="sl">прогрес</div></div>
+      </div>
+      <div class="legend">
+        <div class="li"><div class="ld" style="background:var(--cat-milestone)"></div>Milestone</div>
+        <div class="li"><div class="ld cat-medical"></div>Медицина</div>
+        <div class="li"><div class="ld cat-finance"></div>Фінанси</div>
+        <div class="li"><div class="ld cat-domestic"></div>Побут</div>
+        <div class="lhint">✏️ наведи → редагуй</div>
+      </div>
+      <div id="taskList"></div>
+    </div>
+  </div>
+
+  <!-- TIMELINE VIEW -->
+  <div id="timelineView" class="content" style="display:none;">
+    <div class="inner" style="max-width:none;"><div class="gantt-wrap" id="gw"></div></div>
+  </div>
+</div>
+
+<!-- EDIT MODAL -->
+<div class="mbg" id="mbg" onclick="bgc(event,'mbg')">
+  <div class="modal">
+    <h3>Редагувати крок</h3>
+    <div class="mf"><label>Назва</label><input type="text" id="mT"></div>
+    <div class="mf"><label>Термін / Тиждень</label><input type="text" id="mW"></div>
+    <div class="mf"><label>Статус</label><div class="pill-row">
+      <div class="pill active" data-s="none" onclick="ss('none')">Не розпочато</div>
+      <div class="pill" data-s="done" onclick="ss('done')">✓ Виконано</div>
+      <div class="pill" data-s="partial" onclick="ss('partial')">◑ Частково</div>
+      <div class="pill" data-s="skipped" onclick="ss('skipped')">✕ Пропущено</div>
+    </div></div>
+    <div class="mf"><label>Нотатка</label><textarea id="mN" placeholder="Дата, виконавець, результат..."></textarea></div>
+    <div class="mf"><label>Посилання</label><input type="text" id="mL" placeholder="https://..."></div>
+    <div class="msec">💰 Витрати</div>
+    <div class="two-col">
+      <div class="mf"><label>Кошторис</label><div class="cur"><span class="cur-sym" id="mEstSym">₴</span><input type="number" id="mEst" placeholder="0" min="0"></div></div>
+      <div class="mf"><label>Фактично</label><div class="cur"><span class="cur-sym" id="mSpentSym">₴</span><input type="number" id="mSpent" placeholder="0" min="0"></div></div>
+    </div>
+    <div class="mf"><label>Опис витрат</label><input type="text" id="mCN" placeholder="Що оплачено..."></div>
+    <div class="mact"><button class="btnc" onclick="cm()">Скасувати</button><button class="btns" onclick="sm()">Зберегти</button></div>
+  </div>
+</div>
+
+<!-- ADD STEP MODAL -->
+<div class="mbg" id="addBg" onclick="bgc(event,'addBg')">
+  <div class="modal">
+    <h3>➕ Новий крок</h3>
+    <div class="mf"><label>Назва</label><input type="text" id="aTitle" placeholder="Назва кроку..."></div>
+    <div class="mf"><label>Категорія</label><div class="pill-row" id="catPills"></div></div>
+    <div class="mf"><label>Секція</label><div class="pill-row" id="sectionPills"></div></div>
+    <div class="mf"><label>Термін</label>
+      <div class="week-row">
+        <input type="text" id="aWs" placeholder="від (тиж. або дата)">
+        <div class="week-sep">—</div>
+        <input type="text" id="aWe" placeholder="до">
+      </div>
+    </div>
+    <div class="mf"><label>Нотатка</label><textarea id="aN" placeholder="Додаткова інформація..."></textarea></div>
+    <div class="mf"><label>Посилання</label><input type="text" id="aL" placeholder="https://..."></div>
+    <div class="msec">💰 Бюджет</div>
+    <div class="two-col">
+      <div class="mf"><label>Кошторис</label><div class="cur"><span class="cur-sym" id="aEstSym">₴</span><input type="number" id="aEst" placeholder="0" min="0"></div></div>
+      <div class="mf"><label>Фактично</label><div class="cur"><span class="cur-sym" id="aSpentSym">₴</span><input type="number" id="aSpent" placeholder="0" min="0"></div></div>
+    </div>
+    <div class="mf"><label>Опис витрат</label><input type="text" id="aCN" placeholder="Що оплачено..."></div>
+    <div class="mact"><button class="btnc" onclick="closeAdd()">Скасувати</button><button class="btns" onclick="addStep()">Додати крок</button></div>
+  </div>
+</div>
+
+<!-- ADD FOLDER MODAL -->
+<div class="mbg" id="folderBg" onclick="bgc(event,'folderBg')">
+  <div class="modal">
+    <h3>📁 Новий розділ</h3>
+    <div class="mf"><label>Назва розділу</label><input type="text" id="fName" placeholder="Наприклад: Ремонт кухні"></div>
+    <div class="mf"><label>Іконка</label>
+      <div class="emoji-grid" id="emojiGrid"></div>
+    </div>
+    <div class="mact"><button class="btnc" onclick="closeFolderModal()">Скасувати</button><button class="btns" onclick="addFolder()">Створити розділ</button></div>
+  </div>
+</div>
+
+<!-- DELETE -->
+<div class="del-confirm" id="delBg">
+  <div class="del-box">
+    <h4>Видалити?</h4>
+    <p id="delName"></p>
+    <div class="del-actions">
+      <button class="btnc" onclick="closeDelete()">Скасувати</button>
+      <button class="btn-del" onclick="confirmDelete()">Видалити</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════
+// SUPABASE BACKEND
+// ═══════════════════════════════════
+const SB_URL = 'https://igmkjzpevcbjjkwxeltb.supabase.co';
+const SB_KEY = 'sb_publishable_L2kWBSiRUNFyLPwi7bCFpA_LbK5HCie';
+const SK = 'kokohome-v1';
+
+const saveLocal = db => localStorage.setItem(SK, JSON.stringify(db));
+const loadDB = () => { try { return JSON.parse(localStorage.getItem(SK)) || null; } catch { return null; } };
+
+let saveTimer = null;
+let lastSaved = '';
+
+const saveDB = (db) => {
+  saveLocal(db);
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => sbSave(db), 800);
+};
+
+async function sbReq(method, path, body) {
+  try {
+    const res = await fetch(SB_URL + '/rest/v1/' + path, {
+      method,
+      headers: {
+        'apikey': SB_KEY,
+        'Authorization': 'Bearer ' + SB_KEY,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=representation'
+      },
+      body: body ? JSON.stringify(body) : undefined
+    });
+    if (!res.ok) {
+      const txt = await res.text();
+      console.warn('Supabase ' + res.status + ':', txt);
+      return null;
+    }
+    return await res.json();
+  } catch(e) {
+    console.warn('Supabase error:', e);
+    return null;
+  }
+}
+
+async function sbLoad() {
+  const r = await sbReq('GET', "family_data?id=eq.main&select=data");
+  if (!r || !r[0]) return null;
+  return r[0].data;
+}
+
+async function sbSave(db) {
+  const json = JSON.stringify(db);
+  if (json === lastSaved) return;
+  lastSaved = json;
+  const r = await sbReq('PATCH', 'family_data?id=eq.main', { data: db, updated_at: new Date().toISOString() });
+  showSync(r ? '✅' : '⚠️');
+}
+
+function showSync(icon) {
+  const el = document.getElementById('syncDot');
+  if (!el) return;
+  el.textContent = icon;
+  el.style.opacity = '1';
+  setTimeout(() => el.style.opacity = '0.3', 3000);
+}
+
+async function pullFromSupabase() {
+  const remote = await sbLoad();
+  if (!remote) return false;
+  if (!remote.folders || remote.folders.length === 0) {
+    // Empty database — push our defaults
+    DB = loadDB() || defaultDB();
+if (!DB.folders) DB = defaultDB();
+for (const f of DB.folders) {
+  if (!f.state) f.state = {};
+  if (!Array.isArray(f.tasks)) f.tasks = [];
+  if (!Array.isArray(f.sections)) f.sections = [];
+}
+    if (!DB.folders || DB.folders.length === 0) DB = defaultDB();
+    await sbSave(DB);
+    saveLocal(DB);
+    renderSidebar(); renderAll();
+    return true;
+  }
+  // Make sure every folder has state and tasks arrays (defensive)
+  for (const f of remote.folders) {
+    if (!f.state) f.state = {};
+    if (!Array.isArray(f.tasks)) f.tasks = [];
+    if (!Array.isArray(f.sections)) f.sections = [];
+  }
+  // Migration: add new default folders if missing
+  const defaults = defaultDB();
+  const existingIds = new Set(remote.folders.map(f => f.id));
+  let migrated = false;
+  for (const defFolder of defaults.folders) {
+    if (!existingIds.has(defFolder.id) && (defFolder.id === 'birth_pl' || defFolder.id === 'birth_ua')) {
+      remote.folders.push(defFolder);
+      migrated = true;
+    }
+  }
+  if (migrated) {
+    DB = remote;
+    saveLocal(DB);
+    await sbSave(DB);
+    renderSidebar(); renderAll();
+    showSync('🆕');
+    return true;
+  }
+  const remoteStr = JSON.stringify(remote);
+  if (remoteStr === JSON.stringify(DB)) return true;
+  DB = remote;
+  lastSaved = remoteStr;
+  saveLocal(DB);
+  renderSidebar(); renderAll();
+  if (curView === 'timeline') rg();
+  showSync('🔄');
+  return true;
+}
+
+async function manualPull() {
+  const btn = document.getElementById('pullBtn');
+  if (!btn) return;
+  const orig = btn.textContent;
+  btn.textContent = '⏳...'; btn.disabled = true;
+  const ok = await pullFromSupabase();
+  btn.textContent = ok ? '✅' : '❌';
+  setTimeout(() => { btn.textContent = orig; btn.disabled = false; }, 2000);
+}
+
+
+
+const EMOJIS = ['🤰','🏠','🔨','🛏️','🚗','💊','🎓','💼','🌿','🍼','🏗️','💡','🛁','🪴','🐾','📦','🎯','💰','🏋️','✈️'];
+
+// DEFAULT FOLDERS
+function defaultDB() {
+  return {
+    folders: [
+      {
+        id: 'pregnancy', name: 'Вагітність', emoji: '🤰', color: '#262626',
+        categories: ['milestone','medical','finance','domestic'],
+        sections: [
+          {id:'t1', name:'I Триместр', sub:'тижні 1–13', weeks:[1,13]},
+          {id:'t2', name:'II Триместр', sub:'тижні 14–27', weeks:[14,27]},
+          {id:'t3', name:'III Триместр', sub:'тижні 28–40', weeks:[28,40]},
+        ],
+        tasks: [
+          {id:'m1', label:'⭐ Перший скринінг УЗД', week:'11–13 тиж.', cat:'milestone', sec:'t1', ms:true, s:11, e:13},
+          {id:'t1-1', label:'Перший візит до гінеколога', week:'1–4 тиж.', cat:'medical', sec:'t1', s:1, e:4},
+          {id:'t1-2', label:'Аналізи крові та сечі', week:'5–6 тиж.', cat:'medical', sec:'t1', s:5, e:6},
+          {id:'t1-3', label:'Аналізи на інфекції (TORCH)', week:'7–8 тиж.', cat:'medical', sec:'t1', s:7, e:8},
+          {id:'t1-4', label:'Скринінг хромосомних патологій', week:'12–13 тиж.', cat:'medical', sec:'t1', s:12, e:13},
+          {id:'t1-5', label:'Оплата пакету ведення вагітності', week:'6–8 тиж.', cat:'finance', sec:'t1', s:6, e:8},
+          {id:'t1-6', label:'Стоматолог — огляд', week:'8–10 тиж.', cat:'domestic', sec:'t1', s:8, e:10},
+          {id:'t1-7', label:'Повідомити роботодавця', week:'10–12 тиж.', cat:'domestic', sec:'t1', s:10, e:12},
+          {id:'m2', label:'⭐ Другий скринінг УЗД', week:'18–21 тиж.', cat:'milestone', sec:'t2', ms:true, s:18, e:21},
+          {id:'m3', label:'⭐ Тест на глюкозу', week:'24–28 тиж.', cat:'milestone', sec:'t2', ms:true, s:24, e:28},
+          {id:'t2-1', label:'Плановий огляд гінеколога', week:'14 тиж.', cat:'medical', sec:'t2', s:14, e:14},
+          {id:'t2-2', label:'Аналізи крові та сечі', week:'14 тиж.', cat:'medical', sec:'t2', s:14, e:14},
+          {id:'t2-3', label:'Аналіз крові + глюкоза', week:'22 тиж.', cat:'medical', sec:'t2', s:22, e:22},
+          {id:'t2-4', label:'Закупівля: візок, ліжечко', week:'20–22 тиж.', cat:'finance', sec:'t2', s:20, e:22},
+          {id:'t2-5', label:'Бюджет на пологи', week:'24 тиж.', cat:'finance', sec:'t2', s:24, e:24},
+          {id:'t2-6', label:'Курси батьківства', week:'18–22 тиж.', cat:'domestic', sec:'t2', s:18, e:22},
+          {id:'t2-7', label:'Облаштування дитячої кімнати', week:'24–27 тиж.', cat:'domestic', sec:'t2', s:24, e:27},
+          {id:'m4', label:'⭐ Декретна відпустка', week:'30 тиж.', cat:'milestone', sec:'t3', ms:true, s:30, e:30},
+          {id:'m5', label:'⭐ Збір сумок у пологовий', week:'36 тиж.', cat:'milestone', sec:'t3', ms:true, s:36, e:36},
+          {id:'t3-1', label:'Аналізи крові та сечі', week:'28 тиж.', cat:'medical', sec:'t3', s:28, e:28},
+          {id:'t3-2', label:'Третій скринінг УЗД + доплер', week:'32 тиж.', cat:'medical', sec:'t3', s:32, e:32},
+          {id:'t3-3', label:'Фінальний огляд гінеколога', week:'38 тиж.', cat:'medical', sec:'t3', s:38, e:38},
+          {id:'t3-4', label:'Договір з пологовим будинком', week:'34–36 тиж.', cat:'finance', sec:'t3', s:34, e:36},
+          {id:'t3-5', label:'Закупівля речей для малюка', week:'36–38 тиж.', cat:'finance', sec:'t3', s:36, e:38},
+          {id:'t3-6', label:'Вибір пологового будинку', week:'32–34 тиж.', cat:'domestic', sec:'t3', s:32, e:34},
+        ],
+        state: {}
+      },
+      {
+        id: 'housing', name: 'Житло', emoji: '🏠', color: '#404040',
+        categories: ['housing','utility','domestic'],
+        sections: [
+          {id:'gen', name:'Загальні витрати', sub:'оренда та комуналка'},
+          {id:'buy', name:'Купівля / Оренда', sub:''},
+          {id:'monthly', name:'Щомісячні витрати', sub:''},
+        ],
+        tasks: [
+          {id:'h1', label:'⭐ Пошук та вибір житла', week:'', cat:'housing', sec:'gen', ms:true, s:1, e:4},
+          {id:'h2', label:'Орендна плата (місяць)', week:'щомісяця', cat:'housing', sec:'monthly', s:1, e:1},
+          {id:'h3', label:'Електроенергія', week:'щомісяця', cat:'utility', sec:'monthly', s:1, e:1},
+          {id:'h4', label:'Газ та опалення', week:'щомісяця', cat:'utility', sec:'monthly', s:1, e:1},
+          {id:'h5', label:'Вода та каналізація', week:'щомісяця', cat:'utility', sec:'monthly', s:1, e:1},
+          {id:'h6', label:'Інтернет та телефон', week:'щомісяця', cat:'utility', sec:'monthly', s:1, e:1},
+          {id:'h7', label:'Меблі та техніка', week:'', cat:'domestic', sec:'buy', s:1, e:8},
+          {id:'h8', label:'Страхування житла', week:'щорічно', cat:'housing', sec:'gen', s:1, e:1},
+        ],
+        state: {}
+      },
+      {
+        id: 'repair', name: 'Ремонт', emoji: '🔨', color: '#525252',
+        categories: ['renovation','domestic','finance'],
+        sections: [
+          {id:'plan', name:'Планування', sub:'проєкт та матеріали'},
+          {id:'work', name:'Роботи', sub:''},
+          {id:'finish', name:'Оздоблення', sub:'фінальний етап'},
+        ],
+        tasks: [
+          {id:'r1', label:'⭐ Дизайн-проєкт та кошторис', week:'', cat:'renovation', sec:'plan', ms:true, s:1, e:2},
+          {id:'r2', label:'Закупівля матеріалів', week:'', cat:'finance', sec:'plan', s:2, e:4},
+          {id:'r3', label:'Демонтажні роботи', week:'', cat:'renovation', sec:'work', s:4, e:6},
+          {id:'r4', label:'Сантехнічні роботи', week:'', cat:'renovation', sec:'work', s:6, e:8},
+          {id:'r5', label:'Електромонтажні роботи', week:'', cat:'renovation', sec:'work', s:8, e:10},
+          {id:'r6', label:'Штукатурка та вирівнювання', week:'', cat:'renovation', sec:'work', s:10, e:14},
+          {id:'r7', label:'Укладання плитки', week:'', cat:'renovation', sec:'finish', s:14, e:18},
+          {id:'r8', label:'Фарбування та шпалери', week:'', cat:'renovation', sec:'finish', s:18, e:22},
+          {id:'r9', label:'Підлога', week:'', cat:'renovation', sec:'finish', s:22, e:26},
+          {id:'r10', label:'⭐ Здача та прийомка робіт', week:'', cat:'renovation', sec:'finish', ms:true, s:26, e:28},
+        ],
+        state: {}
+      },
+      {
+        id: 'birth_pl', name: 'Пологи в Польщі', emoji: '🇵🇱', color: '#737373', currency: 'PLN',
+        categories: ['milestone','medical','finance','domestic'],
+        sections: [
+          {id:'prep_pl', name:'Підготовка', sub:'документи та клініка'},
+          {id:'birth_pl_act', name:'Пологи', sub:'процес'},
+          {id:'after_pl', name:'Після родів', sub:'перебування під наглядом'},
+        ],
+        tasks: [
+          {id:'pl1', label:'⭐ Вибір клініки/шпиталю', week:'20–24 тиж.', cat:'milestone', sec:'prep_pl', ms:true, s:20, e:24},
+          {id:'pl2', label:'Реєстрація в NFZ або страховка', week:'12–16 тиж.', cat:'finance', sec:'prep_pl', s:12, e:16},
+          {id:'pl3', label:'Karta przebiegu ciąży', week:'10–14 тиж.', cat:'medical', sec:'prep_pl', s:10, e:14},
+          {id:'pl4', label:'План пологів (plan porodu)', week:'32–36 тиж.', cat:'medical', sec:'prep_pl', s:32, e:36},
+          {id:'pl5', label:'Курси (szkoła rodzenia)', week:'24–32 тиж.', cat:'domestic', sec:'prep_pl', s:24, e:32},
+          {id:'pl6', label:'Збір сумок до szpital', week:'34–36 тиж.', cat:'domestic', sec:'prep_pl', s:34, e:36},
+          {id:'pl7', label:'Документи: paszport, PESEL', week:'28–32 тиж.', cat:'finance', sec:'prep_pl', s:28, e:32},
+          {id:'pl8', label:'⭐ Перейми та виклик pogotowie', week:'38–40 тиж.', cat:'milestone', sec:'birth_pl_act', ms:true, s:38, e:40},
+          {id:'pl9', label:'Прийом до szpital — porodówka', week:'40 тиж.', cat:'medical', sec:'birth_pl_act', s:40, e:40},
+          {id:'pl10', label:'Знеболення (epidural або інше)', week:'40 тиж.', cat:'medical', sec:'birth_pl_act', s:40, e:40},
+          {id:'pl11', label:'⭐ Народження дитини', week:'40 тиж.', cat:'milestone', sec:'birth_pl_act', ms:true, s:40, e:40},
+          {id:'pl12', label:'Перебування в шпиталі (2-4 дні)', week:'після пологів', cat:'medical', sec:'after_pl', s:40, e:41},
+          {id:'pl13', label:'Перші щеплення (WZW B, BCG)', week:'перші 24 год', cat:'medical', sec:'after_pl', s:40, e:41},
+          {id:'pl14', label:'Skala Apgar та обстеження', week:'одразу після', cat:'medical', sec:'after_pl', s:40, e:40},
+          {id:'pl15', label:'Реєстрація народження (USC)', week:'21 день', cat:'finance', sec:'after_pl', s:40, e:42},
+          {id:'pl16', label:'Akt urodzenia + PESEL', week:'після USC', cat:'finance', sec:'after_pl', s:40, e:42},
+          {id:'pl17', label:'Becikowe (1000 zł)', week:'до 12 міс.', cat:'finance', sec:'after_pl', s:40, e:52},
+          {id:'pl18', label:'Rodzina 800+', week:'щомісяця', cat:'finance', sec:'after_pl', s:40, e:52},
+          {id:'pl19', label:'Wybór pediatry, перша wizyta', week:'перший тиждень', cat:'medical', sec:'after_pl', s:40, e:41},
+        ],
+        state: {}
+      },
+      {
+        id: 'birth_ua', name: 'Пологи в Україні', emoji: '🇺🇦', color: '#8a8a8a', currency: 'UAH',
+        categories: ['milestone','medical','finance','domestic'],
+        sections: [
+          {id:'prep_ua', name:'Підготовка', sub:'документи та пологовий'},
+          {id:'birth_ua_act', name:'Пологи', sub:'процес'},
+          {id:'after_ua', name:'Після родів', sub:'перебування під наглядом'},
+        ],
+        tasks: [
+          {id:'ua1', label:'⭐ Вибір пологового будинку', week:'24–28 тиж.', cat:'milestone', sec:'prep_ua', ms:true, s:24, e:28},
+          {id:'ua2', label:'Договір / партнерські пологи', week:'30–34 тиж.', cat:'finance', sec:'prep_ua', s:30, e:34},
+          {id:'ua3', label:'Обмінна карта вагітної', week:'28–32 тиж.', cat:'medical', sec:'prep_ua', s:28, e:32},
+          {id:'ua4', label:'План пологів', week:'32–36 тиж.', cat:'medical', sec:'prep_ua', s:32, e:36},
+          {id:'ua5', label:'Курси для вагітних', week:'24–32 тиж.', cat:'domestic', sec:'prep_ua', s:24, e:32},
+          {id:'ua6', label:'Збір сумок у пологовий', week:'34–36 тиж.', cat:'domestic', sec:'prep_ua', s:34, e:36},
+          {id:'ua7', label:'Документи: паспорт, страхування', week:'28–32 тиж.', cat:'finance', sec:'prep_ua', s:28, e:32},
+          {id:'ua8', label:'⭐ Перейми та виклик швидкої', week:'38–40 тиж.', cat:'milestone', sec:'birth_ua_act', ms:true, s:38, e:40},
+          {id:'ua9', label:'Прийом до пологового будинку', week:'40 тиж.', cat:'medical', sec:'birth_ua_act', s:40, e:40},
+          {id:'ua10', label:'Знеболення (епідуральна або ін.)', week:'40 тиж.', cat:'medical', sec:'birth_ua_act', s:40, e:40},
+          {id:'ua11', label:'⭐ Народження дитини', week:'40 тиж.', cat:'milestone', sec:'birth_ua_act', ms:true, s:40, e:40},
+          {id:'ua12', label:'Перебування в пологовому (3-5 днів)', week:'після пологів', cat:'medical', sec:'after_ua', s:40, e:41},
+          {id:'ua13', label:'Перші щеплення (БЦЖ, гепатит B)', week:'перші 24 год', cat:'medical', sec:'after_ua', s:40, e:41},
+          {id:'ua14', label:'Шкала Апгар та обстеження', week:'одразу після', cat:'medical', sec:'after_ua', s:40, e:40},
+          {id:'ua15', label:'Свідоцтво про народження (РАГС)', week:'30 днів', cat:'finance', sec:'after_ua', s:40, e:42},
+          {id:'ua16', label:'Допомога при народженні', week:'одноразово + щомісяця', cat:'finance', sec:'after_ua', s:40, e:52},
+          {id:'ua17', label:'Реєстрація в ЦНАП', week:'перший місяць', cat:'finance', sec:'after_ua', s:40, e:42},
+          {id:'ua18', label:'Декларація з педіатром', week:'перший тиждень', cat:'medical', sec:'after_ua', s:40, e:41},
+          {id:'ua19', label:'Перший патронаж новонародженого', week:'перші 3 дні', cat:'medical', sec:'after_ua', s:40, e:40},
+        ],
+        state: {}
+      }
+    ],
+    activeFolder: 'pregnancy'
+  };
+}
+
+// ═══════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════
+const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const num = v => parseFloat(v) || 0;
+const CUR_SYM = { UAH: '₴', PLN: 'zł', USD: '$', EUR: '€' };
+function curOf(folderId) {
+  const f = DB.folders.find(f => f.id === folderId) || DB.folders.find(f => f.id === DB.activeFolder);
+  return (f && f.currency) || 'UAH';
+}
+function curSym(folderId) { return CUR_SYM[curOf(folderId)] || '₴'; }
+const fmt = n => n ? n.toLocaleString('uk-UA') + curSym() : '—';
+const fmtN = n => n ? n.toLocaleString('uk-UA') + curSym() : '';
+
+function setFolderCurrency(cur) {
+  const f = DB.folders.find(f => f.id === DB.activeFolder);
+  if (!f) return;
+  f.currency = cur;
+  saveDB(DB);
+  renderAll();
+}
+
+const CAT_LABELS = {
+  milestone: '⭐ Milestone', medical: '🩺 Медицина', finance: '💰 Фінанси',
+  domestic: '🏠 Побут', housing: '🏘️ Житло', utility: '💡 Комунальні',
+  renovation: '🔨 Ремонт'
+};
+const CAT_DOT = {
+  milestone: '#e07a20', medical: '#c97090', finance: '#5b80d4',
+  domestic: '#3d9966', housing: '#5b80d4', utility: '#c98d30', renovation: '#3d9966',
+};
+
+// ═══════════════════════════════════
+// STATE
+// ═══════════════════════════════════
+let DB = loadDB() || defaultDB();
+if (!DB.folders) DB = defaultDB();
+for (const f of DB.folders) {
+  if (!f.state) f.state = {};
+  if (!Array.isArray(f.tasks)) f.tasks = [];
+  if (!Array.isArray(f.sections)) f.sections = [];
+}
+let curView = 'list';
+let budgetOpen = true;
+let mId = null, mSt = 'none';
+let deleteId = null, deleteType = null;
+let addCat = 'medical', addSec = '';
+let selEmoji = '📁';
+
+function curFolder() { return DB.folders.find(f => f.id === DB.activeFolder); }
+
+function taskState(folder, taskId) { return folder.state[taskId] || {}; }
+
+function getTask(folder, taskId) {
+  const def = folder.tasks.find(t => t.id === taskId) || {};
+  const st = taskState(folder, taskId);
+  return {
+    ...def,
+    label: st.label ?? def.label,
+    week: st.week ?? (def.week || ''),
+    status: st.status || 'none',
+    note: st.note || '',
+    link: st.link || '',
+    est: num(st.est),
+    spent: num(st.spent),
+    costNote: st.costNote || ''
+  };
+}
+
+// ═══════════════════════════════════
+// SIDEBAR
+// ═══════════════════════════════════
+
+
+function renderSidebar() {
+  const list = document.getElementById('folderList');
+  list.innerHTML = '';
+  DB.folders.forEach(f => {
+    const isActive = f.id === DB.activeFolder;
+    const tasks = f.tasks;
+    const done = tasks.filter(t => ((f.state||{})[t.id]||{}).status === 'done').length;
+    const btn = document.createElement('button');
+    btn.className = 'fb' + (isActive ? ' act' : '');
+    if (isActive) {
+      btn.style.setProperty('--fac', f.color + '22');
+      btn.style.setProperty('--fac-text', f.color);
+    }
+    const isDeletable = !['pregnancy','housing','repair'].includes(f.id);
+    btn.innerHTML = `
+      <div class="fi" style="background:${f.color}22">${f.emoji}</div>
+      <div class="fd">
+        <div class="fn">${esc(f.name)}</div>
+        <div class="fm">${done}/${tasks.length} виконано</div>
+      </div>
+      ${isDeletable ? `<button class="del-folder-btn" onclick="openDeleteFolder('${f.id}',event)" title="Видалити розділ">✕</button>` : ''}
+    `;
+    btn.onclick = (e) => { if (e.target.classList.contains('del-folder-btn')) return; selectFolder(f.id); };
+    list.appendChild(btn);
+  });
+}
+
+function toggleSidebar(forceState) {
+  const sb = document.getElementById('sb');
+  if (!sb) return;
+  if (forceState === false) sb.classList.remove('open');
+  else if (forceState === true) sb.classList.add('open');
+  else sb.classList.toggle('open');
+}
+
+// Close sidebar on Escape
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    const sb = document.getElementById('sb');
+    if (sb && sb.classList.contains('open')) toggleSidebar(false);
+  }
+});
+
+function selectFolder(id) {
+  DB.activeFolder = id;
+  saveDB(DB);
+  renderSidebar();
+  renderAll();
+  if (curView === 'timeline') rg();
+  if (window.innerWidth <= 700) toggleSidebar(false);
+}
+
+// ═══════════════════════════════════
+// TOPBAR & BUDGET
+// ═══════════════════════════════════
+function updateTopbar() {
+  const f = curFolder();
+  document.getElementById('tbEmoji').textContent = f.emoji;
+  document.getElementById('tbTitle').textContent = f.name;
+  document.getElementById('pf').style.background = f.color;
+}
+
+function calcBudget(folder) {
+  let totalEst = 0, totalSpent = 0;
+  folder.tasks.forEach(t => {
+    const s = folder.state[t.id] || {};
+    totalEst += num(s.est);
+    totalSpent += num(s.spent);
+  });
+  return { totalEst, totalSpent, left: totalEst - totalSpent };
+}
+
+function updateBudgetDash() {
+  const f = curFolder();
+  const { totalEst, totalSpent, left } = calcBudget(f);
+  document.getElementById('bEst').textContent = fmt(totalEst);
+  const spEl = document.getElementById('bSpent');
+  spEl.textContent = fmt(totalSpent);
+  spEl.className = 'bstat-val ' + (totalSpent > totalEst && totalEst > 0 ? 'red' : 'green');
+  const ltEl = document.getElementById('bLeft');
+  ltEl.textContent = left >= 0 ? fmt(left) : '−' + fmt(-left);
+  ltEl.className = 'bstat-val ' + (left < 0 ? 'red' : '');
+  const pct = totalEst > 0 ? Math.min(Math.round(totalSpent / totalEst * 100), 999) : 0;
+  document.getElementById('bBarLbl').textContent = totalEst > 0 ? pct + '%' : '—';
+  const bar = document.getElementById('bBar');
+  bar.style.width = Math.min(pct, 100) + '%';
+  bar.style.background = pct > 100 ? '#525252' : pct > 80 ? '#3a3a3a' : '#0a0a0a';
+}
+
+function toggleBudget() {
+  budgetOpen = !budgetOpen;
+  document.getElementById('bdashBody').style.display = budgetOpen ? '' : 'none';
+  document.querySelector('.btoggle').textContent = budgetOpen ? 'згорнути ▲' : 'розгорнути ▼';
+}
+
+// ═══════════════════════════════════
+// TASK LIST RENDER
+// ═══════════════════════════════════
+function renderTask(folder, task, container) {
+  const t = getTask(folder, task.id);
+  const done = t.status === 'done', partial = t.status === 'partial', skipped = t.status === 'skipped';
+  const isCustom = task.custom === true;
+  const f = curFolder();
+
+  let sb = '';
+  if (done) sb = '<span class="sbadge done">✓</span>';
+  else if (partial) sb = '<span class="sbadge partial">◑</span>';
+  else if (skipped) sb = '<span class="sbadge skipped">✕</span>';
+
+  let noteHtml = '';
+  if (t.note) noteHtml += `<div class="task-sub-note">${esc(t.note)}</div>`;
+  if (t.link) {
+    const href = t.link.startsWith('http') ? t.link : 'https://' + t.link;
+    const d = t.link.length > 38 ? t.link.slice(0, 38) + '…' : t.link;
+    noteHtml += `<div class="task-sub-note"><a href="${esc(href)}" target="_blank" rel="noopener" style="color:var(--primary);text-decoration:none;">🔗 ${esc(d)}</a></div>`;
+  }
+
+  let costHtml = '';
+  if (t.est > 0 || t.spent > 0) {
+    const diff = t.est > 0 && t.spent > 0 ? t.spent - t.est : null;
+    const diffHtml = diff !== null ? `<div class="cost-diff-badge ${diff > 0 ? 'over' : 'under'}">${diff > 0 ? '+' + fmt(diff) : '−' + fmt(-diff)}</div>` : '';
+    const spCol = t.est > 0 && t.spent > t.est ? '#525252' : '#0a0a0a';
+    costHtml = `<div class="cost-right">
+      ${t.est > 0 ? `<div class="cost-row-line"><span class="cost-lbl">план</span><span class="cost-num">${fmt(t.est)}</span></div>` : ''}
+      ${t.spent > 0 ? `<div class="cost-row-line"><span class="cost-lbl">факт</span><span class="cost-num" style="color:${spCol}">${fmt(t.spent)}</span></div>` : ''}
+      ${diffHtml}
+    </div>`;
+  }
+
+  const dotColor = CAT_DOT[t.cat] || '#737373';
+  const bgColor = t.ms ? 'var(--card-milestone)' : t.cat === 'medical' ? 'var(--card-medical)' : t.cat === 'finance' || t.cat === 'housing' ? 'var(--card-finance)' : t.cat === 'utility' ? 'var(--card-utility)' : 'var(--card-domestic)';
+  const customBadge = isCustom ? '<span class="custom-badge">власний</span>' : '';
+
+  const wrap = document.createElement('div');
+  wrap.className = 'tw';
+  wrap.id = 'w-' + task.id;
+  wrap.innerHTML = `<div class="card" style="background:${bgColor}">
+    <div class="task-main-row">
+      <div class="cb ${done ? 'cb-done' : ''}" style="${done ? 'background:' + f.color + ';border-color:transparent' : ''}" onclick="td('${task.id}')">
+        <svg class="ck" viewBox="0 0 10 10"><polyline points="1.5,5 4,7.5 8.5,2.5" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="task-body">
+        <div class="task-title-row">
+          <span class="task-title ${done ? 'task-done' : ''}">${esc(t.label)}${customBadge}</span>${sb}
+        </div>
+        ${noteHtml}
+        ${t.week ? `<div class="task-week-lbl">${esc(t.week)}</div>` : ''}
+      </div>
+      ${costHtml}
+      <div class="row-btns">
+        <button class="ibtn" onclick="om('${task.id}')" title="Редагувати"><svg width="11" height="11" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M9.5 2.5l2 2L4 12H2v-2L9.5 2.5z"/></svg></button>
+        <button class="ibtn del" onclick="openDelete('${task.id}')" title="Видалити"><svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M1 1l10 10M11 1L1 11"/></svg></button>
+      </div>
+    </div>
+  </div>`;
+  container.appendChild(wrap);
+}
+
+function renderAll() {
+  const curF = DB.folders.find(f => f.id === DB.activeFolder);
+  const curSel = document.getElementById('curSel');
+  if (curSel && curF) curSel.value = curF.currency || 'UAH';
+  // Update modal symbols
+  const sym = curSym();
+  ['mEstSym','mSpentSym','aEstSym','aSpentSym'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = sym;
+  });
+  updateTopbar();
+  const f = curFolder();
+  const list = document.getElementById('taskList');
+  list.innerHTML = '';
+
+  f.sections.forEach(sec => {
+    const secTasks = f.tasks.filter(t => t.sec === sec.id);
+    if (secTasks.length === 0) return;
+
+    const secEl = document.createElement('div');
+    secEl.className = 'trim';
+    secEl.id = 'sec-' + sec.id;
+
+    const done = secTasks.filter(t => ((f.state||{})[t.id]||{}).status === 'done').length;
+    secEl.innerHTML = `<div class="thdr" onclick="this.parentElement.classList.toggle('collapsed')">
+      <div><h2>${esc(sec.name)}<span class="wk">${sec.sub || ''}</span></h2></div>
+      <div style="display:flex;align-items:center;gap:5px">
+        <span class="tcnt">${done}/${secTasks.length}</span>
+        <svg class="chev" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 8l5 5 5-5"/></svg>
+      </div>
+    </div>
+    <div class="tbody" id="sec-body-${sec.id}"></div>`;
+    list.appendChild(secEl);
+
+    const catGroups = {};
+    secTasks.forEach(t => { if (!catGroups[t.cat]) catGroups[t.cat] = []; catGroups[t.cat].push(t); });
+    const tbody = document.getElementById('sec-body-' + sec.id);
+    Object.entries(catGroups).forEach(([cat, tasks]) => {
+      const lbl = document.createElement('div');
+      lbl.className = 'slbl';
+      lbl.textContent = CAT_LABELS[cat] || cat;
+      tbody.appendChild(lbl);
+      tasks.forEach(t => renderTask(f, t, tbody));
+    });
+  });
+
+  // Custom tasks not in any section
+  const customNoSec = f.tasks.filter(t => t.custom && !f.sections.find(s => s.id === t.sec));
+  if (customNoSec.length > 0) {
+    const secEl = document.createElement('div');
+    secEl.className = 'trim';
+    secEl.innerHTML = `<div class="thdr" onclick="this.parentElement.classList.toggle('collapsed')"><div><h2>Додаткові кроки</h2></div><div style="display:flex;align-items:center;gap:5px"><svg class="chev" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 8l5 5 5-5"/></svg></div></div><div class="tbody" id="sec-body-custom"></div>`;
+    list.appendChild(secEl);
+    const tbody = document.getElementById('sec-body-custom');
+    customNoSec.forEach(t => renderTask(f, t, tbody));
+  }
+
+  updateStats();
+  updateBudgetDash();
+}
+
+function updateStats() {
+  const f = curFolder();
+  let done = 0, total = f.tasks.length;
+  f.tasks.forEach(t => { if (((f.state||{})[t.id]||{}).status === 'done') done++; });
+  const pct = Math.round(done / total * 100);
+  ['sd', 'hd'].forEach(id => document.getElementById(id).textContent = done);
+  document.getElementById('st').textContent = total;
+  document.getElementById('ht').textContent = total;
+  ['sp', 'hp'].forEach(id => document.getElementById(id).textContent = pct + '%');
+  document.getElementById('pf').style.width = pct + '%';
+}
+
+// ═══════════════════════════════════
+// ACTIONS
+// ═══════════════════════════════════
+function sw(v) {
+  curView = v;
+  document.getElementById('listView').style.display = v === 'list' ? 'block' : 'none';
+  document.getElementById('timelineView').style.display = v === 'timeline' ? 'block' : 'none';
+  document.getElementById('btnL').classList.toggle('active', v === 'list');
+  document.getElementById('btnT').classList.toggle('active', v === 'timeline');
+  if (v === 'timeline') rg();
+}
+
+function td(id) {
+  const f = curFolder();
+  if (!f.state) f.state = {}; const cur = (f.state[id] || {}).status || 'none';
+  f.state[id] = { ...(f.state[id] || {}), status: cur === 'done' ? 'none' : 'done' };
+  saveDB(DB);
+  renderAll();
+  if (curView === 'timeline') rg();
+}
+
+// ═══════════════════════════════════
+// EDIT MODAL
+// ═══════════════════════════════════
+function om(id) {
+  mId = id;
+  const f = curFolder();
+  const t = getTask(f, id);
+  mSt = t.status;
+  document.getElementById('mT').value = t.label;
+  document.getElementById('mW').value = t.week;
+  document.getElementById('mN').value = t.note;
+  document.getElementById('mL').value = t.link;
+  document.getElementById('mEst').value = t.est || '';
+  document.getElementById('mSpent').value = t.spent || '';
+  document.getElementById('mCN').value = t.costNote || '';
+  document.querySelectorAll('[data-s]').forEach(p => p.classList.toggle('active', p.dataset.s === mSt));
+  document.getElementById('mbg').classList.add('open');
+  setTimeout(() => document.getElementById('mT').focus(), 50);
+}
+
+function ss(v) {
+  mSt = v;
+  document.querySelectorAll('[data-s]').forEach(p => p.classList.toggle('active', p.dataset.s === v));
+}
+
+function cm() { document.getElementById('mbg').classList.remove('open'); mId = null; }
+
+function sm() {
+  if (!mId) return;
+  const savedId = mId;
+  const f = curFolder();
+  f.state[savedId] = {
+    ...(f.state[savedId] || {}),
+    label: document.getElementById('mT').value.trim() || getTask(f, savedId).label,
+    week: document.getElementById('mW').value.trim(),
+    status: mSt,
+    note: document.getElementById('mN').value.trim(),
+    link: document.getElementById('mL').value.trim(),
+    est: num(document.getElementById('mEst').value),
+    spent: num(document.getElementById('mSpent').value),
+    costNote: document.getElementById('mCN').value.trim()
+  };
+  saveDB(DB);
+  cm();
+  renderAll();
+  if (curView === 'timeline') rg();
+}
+
+// ═══════════════════════════════════
+// ADD STEP
+// ═══════════════════════════════════
+function openAdd() {
+  const f = curFolder();
+  addCat = f.categories[0] || 'medical';
+  addSec = f.sections[0]?.id || '';
+
+  // Build cat pills
+  const cp = document.getElementById('catPills');
+  cp.innerHTML = '';
+  f.categories.forEach(c => {
+    const p = document.createElement('div');
+    p.className = 'pill' + (c === addCat ? ' active' : '');
+    p.dataset.c = c;
+    p.textContent = CAT_LABELS[c] || c;
+    p.onclick = () => { addCat = c; document.querySelectorAll('#catPills .pill').forEach(x => x.classList.toggle('active', x.dataset.c === c)); };
+    cp.appendChild(p);
+  });
+
+  // Build section pills
+  const sp = document.getElementById('sectionPills');
+  sp.innerHTML = '';
+  f.sections.forEach(s => {
+    const p = document.createElement('div');
+    p.className = 'pill' + (s.id === addSec ? ' active' : '');
+    p.dataset.t = s.id;
+    p.textContent = s.name;
+    p.onclick = () => { addSec = s.id; document.querySelectorAll('#sectionPills .pill').forEach(x => x.classList.toggle('active', x.dataset.t === s.id)); };
+    sp.appendChild(p);
+  });
+
+  ['aTitle','aN','aL','aCN'].forEach(id => document.getElementById(id).value = '');
+  ['aWs','aWe','aEst','aSpent'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('addBg').classList.add('open');
+  setTimeout(() => document.getElementById('aTitle').focus(), 50);
+}
+
+function closeAdd() { document.getElementById('addBg').classList.remove('open'); }
+
+function addStep() {
+  const label = document.getElementById('aTitle').value.trim();
+  if (!label) { document.getElementById('aTitle').focus(); return; }
+  const f = curFolder();
+  const id = 'custom-' + Date.now();
+  const ws = parseInt(document.getElementById('aWs').value) || 1;
+  const we = parseInt(document.getElementById('aWe').value) || ws;
+  const isMilestone = addCat === 'milestone';
+  const newTask = {
+    id, label: isMilestone ? '⭐ ' + label : label,
+    week: document.getElementById('aWs').value.trim() || '',
+    cat: addCat, sec: addSec || (f.sections[0]?.id || ''),
+    ms: isMilestone, s: ws, e: we, custom: true
+  };
+  f.tasks.push(newTask);
+  const note = document.getElementById('aN').value.trim();
+  const link = document.getElementById('aL').value.trim();
+  const est = num(document.getElementById('aEst').value);
+  const spent = num(document.getElementById('aSpent').value);
+  const costNote = document.getElementById('aCN').value.trim();
+  if (note || link || est || spent || costNote) {
+    f.state[id] = { note, link, est, spent, costNote, status: 'none' };
+  }
+  saveDB(DB);
+  closeAdd();
+  renderAll();
+  if (curView === 'timeline') rg();
+}
+
+// ═══════════════════════════════════
+// DELETE
+// ═══════════════════════════════════
+function openDelete(id) {
+  deleteId = id; deleteType = 'task';
+  const f = curFolder();
+  const t = getTask(f, id);
+  document.getElementById('delName').textContent = '"' + t.label + '" буде видалено назавжди.';
+  document.getElementById('delBg').classList.add('open');
+}
+
+function openDeleteFolder(id, e) {
+  e.stopPropagation();
+  deleteId = id; deleteType = 'folder';
+  const f = DB.folders.find(x => x.id === id);
+  document.getElementById('delName').textContent = 'Розділ "' + (f?.name || id) + '" і всі його кроки будуть видалені.';
+  document.getElementById('delBg').classList.add('open');
+}
+
+function closeDelete() { document.getElementById('delBg').classList.remove('open'); deleteId = null; deleteType = null; }
+
+function confirmDelete() {
+  if (!deleteId) return;
+  if (deleteType === 'task') {
+    const f = curFolder();
+    f.tasks = f.tasks.filter(t => t.id !== deleteId);
+    delete f.state[deleteId];
+  } else if (deleteType === 'folder') {
+    DB.folders = DB.folders.filter(f => f.id !== deleteId);
+    if (DB.activeFolder === deleteId) DB.activeFolder = DB.folders[0]?.id || '';
+  }
+  saveDB(DB);
+  closeDelete();
+  renderSidebar();
+  renderAll();
+  if (curView === 'timeline') rg();
+}
+
+// ═══════════════════════════════════
+// ADD FOLDER
+// ═══════════════════════════════════
+function openAddFolder() {
+  selEmoji = '📁';
+  document.getElementById('fName').value = '';
+  const grid = document.getElementById('emojiGrid');
+  grid.innerHTML = '';
+  EMOJIS.forEach(e => {
+    const btn = document.createElement('button');
+    btn.className = 'epick' + (e === selEmoji ? ' active' : '');
+    btn.textContent = e;
+    btn.onclick = () => { selEmoji = e; document.querySelectorAll('.epick').forEach(b => b.classList.toggle('active', b.textContent === e)); };
+    grid.appendChild(btn);
+  });
+  document.getElementById('folderBg').classList.add('open');
+  setTimeout(() => document.getElementById('fName').focus(), 50);
+}
+
+function closeFolderModal() { document.getElementById('folderBg').classList.remove('open'); }
+
+function addFolder() {
+  const name = document.getElementById('fName').value.trim();
+  if (!name) { document.getElementById('fName').focus(); return; }
+  const id = 'folder-' + Date.now();
+  const colors = ['#262626','#404040','#525252','#737373','#8a8a8a'];
+  const color = colors[DB.folders.length % colors.length];
+  DB.folders.push({
+    id, name, emoji: selEmoji, color,
+    categories: ['finance','domestic','milestone'],
+    sections: [{ id: 'main', name: 'Загальні кроки', sub: '' }],
+    tasks: [],
+    state: {}
+  });
+  DB.activeFolder = id;
+  saveDB(DB);
+  closeFolderModal();
+  renderSidebar();
+  renderAll();
+}
+
+// ═══════════════════════════════════
+// GANTT
+// ═══════════════════════════════════
+function rg() {
+  const wrap = document.getElementById('gw');
+  const f = curFolder();
+  const LBL = 180, avail = Math.max(wrap.clientWidth - LBL - 20, 400), WEEKS = 40;
+  const WW = avail / WEEKS;
+  const { totalEst, totalSpent } = calcBudget(f);
+
+  let h = `<style>#gw{--ww:${WW.toFixed(2)}px}</style>`;
+  h += `<div class="g-budget">
+    <div class="gb"><div class="gb-lbl">Кошторис</div><div class="gb-val">${fmt(totalEst)}</div></div>
+    <div class="gb"><div class="gb-lbl">Витрачено</div><div class="gb-val ${totalSpent > totalEst && totalEst > 0 ? 'red' : 'green'}">${fmt(totalSpent)}</div></div>
+    <div class="gb"><div class="gb-lbl">Залишок</div><div class="gb-val ${totalEst - totalSpent < 0 ? 'red' : ''}">${totalEst - totalSpent >= 0 ? fmt(totalEst - totalSpent) : '−' + fmt(totalSpent - totalEst)}</div></div>
+  </div>`;
+
+  // milestone flags
+  const msFlags = f.tasks.filter(t => t.ms);
+  if (msFlags.length > 0) {
+    h += `<div class="g-ms-row" style="margin-left:${LBL}px">`;
+    msFlags.forEach(t => { const l = ((t.s - 0.5) / WEEKS * 100).toFixed(2); h += `<div class="g-msflag" style="left:${l}%"><div class="g-mslbl">${esc(t.label.replace('⭐ ', ''))}</div><div class="g-msstem"></div></div>`; });
+    h += `</div>`;
+  }
+
+  // Section bands
+  h += `<div class="g-bands" style="margin-left:${LBL}px">`;
+  const secColors = ['#f0f0f0','#f5f5f5','#f7f7f7','#fafafa','#ededed'];
+  const textColors = ['#0a0a0a','#1a1a1a','#2a2a2a','#3a3a3a','#525252'];
+  f.sections.forEach((s, i) => {
+    h += `<div class="gband" style="background:${secColors[i % secColors.length]};color:${textColors[i % textColors.length]};flex:1">${esc(s.name)}</div>`;
+  });
+  h += `</div>`;
+
+  h += `<div class="g-weeks" style="margin-left:${LBL}px">`;
+  for (let w = 1; w <= WEEKS; w++) { h += `<div class="gwc ${w % 4 === 1 ? 'major' : ''}"><div class="gwn">${w}</div></div>`; }
+  h += `</div><div class="gbody" style="position:relative">`;
+
+  const ds = localStorage.getItem('baby-start');
+  if (ds) {
+    const diff = Math.floor((new Date() - new Date(ds)) / 86400000);
+    const cw = Math.min(Math.max(Math.floor(diff / 7) + 1, 1), 40);
+    h += `<div class="today-line" style="left:${(LBL + (cw - 0.5) / WEEKS * avail).toFixed(1)}px"></div>`;
+  }
+
+  f.tasks.forEach(task => {
+    const t = getTask(f, task.id);
+    const done = t.status === 'done';
+    const bL = ((task.s - 1) / WEEKS * 100).toFixed(2);
+    const bW = Math.max((task.e - task.s + 1) / WEEKS * 100, 1.2).toFixed(2);
+    const lc = [task.ms ? 'mslbl' : '', done ? 'donelbl' : ''].filter(Boolean).join(' ');
+    const bc = ['gbar', 'cat-' + task.cat, done ? 'done' : ''].filter(Boolean).join(' ');
+    const note = t.note;
+    const np = note ? ' — ' + note.slice(0, 30) + (note.length > 30 ? '…' : '') : '';
+    let spentBar = '';
+    if (t.est > 0 && t.spent > 0) {
+      const sp = Math.min(t.spent / t.est * 100, 100).toFixed(1);
+      spentBar = `<div class="gcost ${t.spent > t.est ? 'over' : 'spent'}" style="left:${bL}%;width:${(parseFloat(bW) * parseFloat(sp) / 100).toFixed(2)}%"></div>`;
+    }
+    h += `<div class="grow"><div class="glbl ${lc}" onclick="om('${task.id}')" title="${esc(t.label + np)}">${esc(t.label)}</div><div class="gtrack">${spentBar}<div class="${bc}" style="left:${bL}%;width:${bW}%;min-width:5px" onclick="om('${task.id}')">${parseFloat(bW) > 5 ? (task.s === task.e ? 'тиж.' + task.s : task.s + '–' + task.e) : ''}</div></div></div>`;
+  });
+
+  h += `</div><div class="g-bottom"><label>📅 Дата початку:</label><input type="date" value="${ds || ''}" onchange="setSt(this.value)"></div>`;
+  wrap.innerHTML = h;
+}
+
+function setSt(v) { localStorage.setItem('baby-start', v); rg(); }
+
+function bgc(e, id) { if (e.target === document.getElementById(id)) { if (id === 'mbg') cm(); else if (id === 'addBg') closeAdd(); else if (id === 'folderBg') closeFolderModal(); } }
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { cm(); closeAdd(); closeDelete(); closeFolderModal(); }
+  if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') { if (document.getElementById('mbg').classList.contains('open')) sm(); else if (document.getElementById('addBg').classList.contains('open')) addStep(); }
+});
+
+// ═══════════════════════════════════
+// INIT
+// ═══════════════════════════════════
+
+renderSidebar();
+renderAll();
+
+// Supabase: initial sync + auto-poll
+(async () => {
+  try { await pullFromSupabase(); } catch(e) { console.warn('initial pull:', e); }
+})();
+setInterval(() => { try { pullFromSupabase(); } catch(e) {} }, 10000);
+
+window.addEventListener('resize', () => { if (curView === 'timeline') rg(); });
+</script>
+
+</body>
+</html>
