@@ -764,7 +764,7 @@ function defaultDB() {
 }
 
 // ═══════════════════════════════════
-// DATE FILTER (housing only)
+// DATE FILTER (all folders)
 // ═══════════════════════════════════
 let dfActive = false;
 
@@ -803,9 +803,8 @@ function clearDateFilter() {
 }
 
 function showDateFilterPanel() {
-  const f = curFolder();
   const wrap = document.getElementById('dateFilterWrap');
-  if (wrap) wrap.style.display = (f && f.id === 'housing') ? '' : 'none';
+  if (wrap) wrap.style.display = '';
 }
 const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 const num = v => parseFloat(v) || 0;
@@ -1106,7 +1105,7 @@ function renderAll() {
   updateStats();
   updateBudgetDash();
   // Re-apply date filter if active
-  if (dfActive && curFolder()?.id === 'housing') applyDateFilter();
+  if (dfActive) applyDateFilter();
 }
 
 function updateStats() {
@@ -1158,8 +1157,7 @@ function om(id) {
   document.getElementById('mSpent').value = t.spent || '';
   document.getElementById('mCN').value = t.costNote || '';
   document.getElementById('mDate').value = t.date || '';
-  // Show date field only for housing folder
-  document.getElementById('mDateWrap').style.display = f.id === 'housing' ? '' : 'none';
+  document.getElementById('mDateWrap').style.display = '';
   document.querySelectorAll('[data-s]').forEach(p => p.classList.toggle('active', p.dataset.s === mSt));
   document.getElementById('mbg').classList.add('open');
   setTimeout(() => document.getElementById('mT').focus(), 50);
@@ -1229,8 +1227,7 @@ function openAdd() {
   ['aTitle','aN','aL','aCN'].forEach(id => document.getElementById(id).value = '');
   ['aWs','aWe','aEst','aSpent'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('aDate').value = '';
-  // Show date field only for housing folder
-  document.getElementById('aDateWrap').style.display = f.id === 'housing' ? '' : 'none';
+  document.getElementById('aDateWrap').style.display = '';
   document.getElementById('addBg').classList.add('open');
   setTimeout(() => document.getElementById('aTitle').focus(), 50);
 }
