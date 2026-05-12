@@ -371,6 +371,29 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
         <div class="li"><div class="ld cat-domestic"></div>Побут</div>
         <div class="lhint">✏️ наведи → редагуй</div>
       </div>
+      <div id="dateFilterWrap" style="display:none;margin-bottom:12px;">
+        <div style="background:var(--paper);border:1px solid var(--border);border-radius:10px;padding:12px 14px;">
+          <div style="font-size:11px;font-weight:600;color:var(--ink3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;">📅 Фільтр по датах</div>
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+            <div style="display:flex;align-items:center;gap:5px;">
+              <span style="font-size:12px;color:var(--ink3);">від</span>
+              <input type="date" id="dfFrom" onchange="applyDateFilter()" style="border:1px solid var(--border);border-radius:6px;padding:4px 8px;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;background:var(--bg);color:var(--ink);outline:none;">
+            </div>
+            <div style="display:flex;align-items:center;gap:5px;">
+              <span style="font-size:12px;color:var(--ink3);">до</span>
+              <input type="date" id="dfTo" onchange="applyDateFilter()" style="border:1px solid var(--border);border-radius:6px;padding:4px 8px;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;background:var(--bg);color:var(--ink);outline:none;">
+            </div>
+            <button onclick="clearDateFilter()" style="font-size:12px;color:var(--ink3);background:none;border:1px solid var(--border);border-radius:6px;padding:4px 9px;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;">✕ Скинути</button>
+          </div>
+          <div id="dfResult" style="display:none;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);">
+            <div style="display:flex;gap:16px;flex-wrap:wrap;">
+              <div><div style="font-size:11px;color:var(--ink3);text-transform:uppercase;letter-spacing:.7px;margin-bottom:2px;">Операцій</div><div style="font-size:18px;font-weight:600;color:var(--ink)" id="dfCount">0</div></div>
+              <div><div style="font-size:11px;color:var(--ink3);text-transform:uppercase;letter-spacing:.7px;margin-bottom:2px;">Витрачено</div><div style="font-size:18px;font-weight:600;color:var(--ink)" id="dfSpent">—</div></div>
+              <div><div style="font-size:11px;color:var(--ink3);text-transform:uppercase;letter-spacing:.7px;margin-bottom:2px;">Кошторис</div><div style="font-size:18px;font-weight:600;color:var(--ink)" id="dfEst">—</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
       <div id="taskList"></div>
     </div>
   </div>
@@ -393,6 +416,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
       <div class="pill" data-s="partial" onclick="ss('partial')">◑ Частково</div>
       <div class="pill" data-s="skipped" onclick="ss('skipped')">✕ Пропущено</div>
     </div></div>
+    <div class="mf" id="mDateWrap" style="display:none"><label>Дата</label><input type="date" id="mDate"></div>
     <div class="mf"><label>Нотатка</label><textarea id="mN" placeholder="Дата, виконавець, результат..."></textarea></div>
     <div class="mf"><label>Посилання</label><input type="text" id="mL" placeholder="https://..."></div>
     <div class="msec">💰 Витрати</div>
@@ -419,6 +443,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
         <input type="text" id="aWe" placeholder="до">
       </div>
     </div>
+    <div class="mf" id="aDateWrap" style="display:none"><label>Дата</label><input type="date" id="aDate"></div>
     <div class="mf"><label>Нотатка</label><textarea id="aN" placeholder="Додаткова інформація..."></textarea></div>
     <div class="mf"><label>Посилання</label><input type="text" id="aL" placeholder="https://..."></div>
     <div class="msec">💰 Бюджет</div>
@@ -739,8 +764,49 @@ function defaultDB() {
 }
 
 // ═══════════════════════════════════
-// HELPERS
+// DATE FILTER (housing only)
 // ═══════════════════════════════════
+let dfActive = false;
+
+function applyDateFilter() {
+  const from = document.getElementById('dfFrom').value;
+  const to = document.getElementById('dfTo').value;
+  if (!from && !to) { clearDateFilter(); return; }
+  dfActive = true;
+  const f = curFolder();
+  const sym = curSym(f.id);
+  let count = 0, spent = 0, est = 0;
+  f.tasks.forEach(t => {
+    const st = f.state[t.id] || {};
+    const d = st.date || '';
+    const wrap = document.getElementById('w-' + t.id);
+    if (!d) { if (wrap) wrap.style.display = (from || to) ? 'none' : ''; return; }
+    const inRange = (!from || d >= from) && (!to || d <= to);
+    if (wrap) wrap.style.display = inRange ? '' : 'none';
+    if (inRange) { count++; spent += (st.spent || 0); est += (st.est || 0); }
+  });
+  const res = document.getElementById('dfResult');
+  res.style.display = '';
+  document.getElementById('dfCount').textContent = count;
+  document.getElementById('dfSpent').textContent = spent ? spent.toLocaleString('uk-UA') + sym : '—';
+  document.getElementById('dfEst').textContent = est ? est.toLocaleString('uk-UA') + sym : '—';
+}
+
+function clearDateFilter() {
+  dfActive = false;
+  document.getElementById('dfFrom').value = '';
+  document.getElementById('dfTo').value = '';
+  document.getElementById('dfResult').style.display = 'none';
+  // Show all tasks
+  const f = curFolder();
+  if (f) f.tasks.forEach(t => { const w = document.getElementById('w-' + t.id); if (w) w.style.display = ''; });
+}
+
+function showDateFilterPanel() {
+  const f = curFolder();
+  const wrap = document.getElementById('dateFilterWrap');
+  if (wrap) wrap.style.display = (f && f.id === 'housing') ? '' : 'none';
+}
 const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 const num = v => parseFloat(v) || 0;
 const CUR_SYM = { UAH: '₴', PLN: 'zł', USD: '$', EUR: '€' };
@@ -803,7 +869,8 @@ function getTask(folder, taskId) {
     link: st.link || '',
     est: num(st.est),
     spent: num(st.spent),
-    costNote: st.costNote || ''
+    costNote: st.costNote || '',
+    date: st.date || ''
   };
 }
 
@@ -858,6 +925,14 @@ document.addEventListener('keydown', e => {
 function selectFolder(id) {
   DB.activeFolder = id;
   saveDB(DB);
+  // Reset date filter on folder switch
+  dfActive = false;
+  const dfRes = document.getElementById('dfResult');
+  if (dfRes) dfRes.style.display = 'none';
+  const dfFrom = document.getElementById('dfFrom');
+  const dfTo = document.getElementById('dfTo');
+  if (dfFrom) dfFrom.value = '';
+  if (dfTo) dfTo.value = '';
   renderSidebar();
   renderAll();
   if (curView === 'timeline') rg();
@@ -981,6 +1056,7 @@ function renderAll() {
     if (el) el.textContent = sym;
   });
   updateTopbar();
+  showDateFilterPanel();
   const f = curFolder();
   const list = document.getElementById('taskList');
   list.innerHTML = '';
@@ -1029,6 +1105,8 @@ function renderAll() {
 
   updateStats();
   updateBudgetDash();
+  // Re-apply date filter if active
+  if (dfActive && curFolder()?.id === 'housing') applyDateFilter();
 }
 
 function updateStats() {
@@ -1079,6 +1157,9 @@ function om(id) {
   document.getElementById('mEst').value = t.est || '';
   document.getElementById('mSpent').value = t.spent || '';
   document.getElementById('mCN').value = t.costNote || '';
+  document.getElementById('mDate').value = t.date || '';
+  // Show date field only for housing folder
+  document.getElementById('mDateWrap').style.display = f.id === 'housing' ? '' : 'none';
   document.querySelectorAll('[data-s]').forEach(p => p.classList.toggle('active', p.dataset.s === mSt));
   document.getElementById('mbg').classList.add('open');
   setTimeout(() => document.getElementById('mT').focus(), 50);
@@ -1104,7 +1185,8 @@ function sm() {
     link: document.getElementById('mL').value.trim(),
     est: num(document.getElementById('mEst').value),
     spent: num(document.getElementById('mSpent').value),
-    costNote: document.getElementById('mCN').value.trim()
+    costNote: document.getElementById('mCN').value.trim(),
+    date: document.getElementById('mDate').value || ''
   };
   saveDB(DB);
   cm();
@@ -1146,6 +1228,9 @@ function openAdd() {
 
   ['aTitle','aN','aL','aCN'].forEach(id => document.getElementById(id).value = '');
   ['aWs','aWe','aEst','aSpent'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('aDate').value = '';
+  // Show date field only for housing folder
+  document.getElementById('aDateWrap').style.display = f.id === 'housing' ? '' : 'none';
   document.getElementById('addBg').classList.add('open');
   setTimeout(() => document.getElementById('aTitle').focus(), 50);
 }
@@ -1172,8 +1257,9 @@ function addStep() {
   const est = num(document.getElementById('aEst').value);
   const spent = num(document.getElementById('aSpent').value);
   const costNote = document.getElementById('aCN').value.trim();
-  if (note || link || est || spent || costNote) {
-    f.state[id] = { note, link, est, spent, costNote, status: 'none' };
+  const date = document.getElementById('aDate').value || '';
+  if (note || link || est || spent || costNote || date) {
+    f.state[id] = { note, link, est, spent, costNote, date, status: 'none' };
   }
   saveDB(DB);
   closeAdd();
