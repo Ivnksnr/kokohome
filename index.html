@@ -89,6 +89,9 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 .push-btn.error{background:var(--ink2);}
 .add-btn{display:flex;align-items:center;gap:5px;padding:5px 10px;border-radius:7px;border:none;background:var(--ink);color:white;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;flex-shrink:0;}
 .add-btn:hover{opacity:.82;}
+.df-toggle-btn{display:flex;align-items:center;gap:5px;height:24px;padding:0 8px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--ink3);cursor:pointer;flex-shrink:0;transition:all .15s;font-family:'Plus Jakarta Sans',sans-serif;font-size:11px;font-weight:500;}
+.df-toggle-btn:hover{background:var(--card);color:var(--ink);}
+.df-toggle-btn.active{background:var(--primary-bg);border-color:var(--primary-border);color:var(--primary);}
 
 /* CONTENT */
 .content{flex:1;padding:18px 18px 60px;}
@@ -100,27 +103,21 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 .bdash-hdr h3{font-family:'Plus Jakarta Sans',sans-serif;font-size:17px;font-weight:600;}
 .btoggle{font-size:12px;color:var(--ink3);cursor:pointer;padding:2px 7px;border-radius:5px;border:1px solid var(--border);}
 .btoggle:hover{background:var(--paper);}
-.bgrid{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--border);}
-.bstat{padding:12px 14px;border-right:1px solid var(--border);}
+.bgrid{display:grid;grid-template-columns:repeat(6,1fr);border-top:1px solid var(--border);}
+.bstat{padding:10px 12px;border-right:1px solid var(--border);}
 .bstat:last-child{border-right:none;}
-.bstat-lbl{font-size:11px;color:var(--ink3);text-transform:uppercase;letter-spacing:.7px;margin-bottom:3px;}
-.bstat-val{font-family:'Plus Jakarta Sans',sans-serif;font-size:24px;font-weight:600;line-height:1;}
+.bstat-lbl{font-size:10px;color:var(--ink3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:3px;}
+.bstat-val{font-family:'Plus Jakarta Sans',sans-serif;font-size:18px;font-weight:600;line-height:1;}
 .bstat-val.green{color:var(--green);}
 .bstat-val.red{color:var(--red);}
 .bbar-wrap{padding:8px 16px 12px;border-top:1px solid var(--border);}
 .bbar-labels{display:flex;justify-content:space-between;font-size:11px;color:var(--ink3);margin-bottom:4px;}
-.bbar-bg{height:5px;background:var(--paper);border-radius:3px;overflow:hidden;}
+.bbar-bg{height:5px;background:var(--bg);border-radius:3px;overflow:hidden;}
 .bbar-fill{height:100%;border-radius:3px;transition:width .5s;}
-
-/* STATS ROW */
-.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:14px;}
-.sc{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 12px;text-align:center;}
-.sn{font-family:'Plus Jakarta Sans',sans-serif;font-size:24px;font-weight:600;line-height:1;margin-bottom:1px;}
-.sl{font-size:11px;color:var(--ink3);}
-
+.legend-row{display:flex;gap:12px;flex-wrap:nowrap;padding:8px 2px;margin-bottom:10px;align-items:center;overflow-x:auto;white-space:nowrap;}
+.legend-row .df-toggle-btn{margin-left:auto;}
 /* LEGEND */
-.legend{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;padding:8px 12px;background:var(--card);border-radius:10px;border:1px solid var(--border);align-items:center;}
-.li{display:flex;align-items:center;gap:4px;font-size:13px;color:var(--ink2);}
+.li{display:flex;align-items:center;gap:4px;font-size:13px;color:var(--ink2);white-space:nowrap;flex-shrink:0;}
 .ld{width:6px;height:6px;border-radius:50%;}
 .lhint{margin-left:auto;font-size:11px;color:var(--ink3);font-style:italic;}
 
@@ -273,7 +270,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
   .sb.open{transform:none;}
   .sb.open ~ .sb-overlay{display:block;}
   .main{margin-left:0;}
-  .bgrid{grid-template-columns:1fr 1fr;}.bstat:last-child{grid-column:span 2;}
+  .bgrid{grid-template-columns:repeat(3,1fr);}.bstat:nth-child(3){border-right:none;}.bstat:nth-child(n+4){border-top:1px solid var(--border);}
   .two-col{grid-template-columns:1fr;}
   /* Animate burger to X when sidebar open */
   .sb.open ~ .main .burger span:nth-child(1){transform:translateY(6px) rotate(45deg);}
@@ -352,24 +349,29 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
             <div class="bstat"><div class="bstat-lbl">Кошторис</div><div class="bstat-val" id="bEst">—</div></div>
             <div class="bstat"><div class="bstat-lbl">Витрачено</div><div class="bstat-val" id="bSpent">—</div></div>
             <div class="bstat"><div class="bstat-lbl">Залишок</div><div class="bstat-val" id="bLeft">—</div></div>
+            <div class="bstat"><div class="bstat-lbl">Виконано</div><div class="bstat-val" id="sd">0</div></div>
+            <div class="bstat"><div class="bstat-lbl">Всього</div><div class="bstat-val" id="st">0</div></div>
+            <div class="bstat"><div class="bstat-lbl">Прогрес</div><div class="bstat-val" id="sp">0%</div></div>
           </div>
           <div class="bbar-wrap">
             <div class="bbar-labels"><span>Виконання бюджету</span><span id="bBarLbl">0%</span></div>
             <div class="bbar-bg"><div class="bbar-fill" id="bBar" style="width:0%;background:var(--ink)"></div></div>
           </div>
+          <div class="bbar-wrap">
+            <div class="bbar-labels"><span>Виконання кроків</span><span id="hp">0%</span></div>
+            <div class="bbar-bg"><div class="bbar-fill" id="stepsBar" style="width:0%;background:var(--ink)"></div></div>
+          </div>
         </div>
       </div>
-      <div class="stats">
-        <div class="sc"><div class="sn" id="sd">0</div><div class="sl">виконано</div></div>
-        <div class="sc"><div class="sn" id="st">0</div><div class="sl">всього</div></div>
-        <div class="sc"><div class="sn" id="sp">0%</div><div class="sl">прогрес</div></div>
-      </div>
-      <div class="legend">
+      <div class="legend-row">
         <div class="li"><div class="ld" style="background:var(--cat-milestone)"></div>Milestone</div>
         <div class="li"><div class="ld cat-medical"></div>Медицина</div>
         <div class="li"><div class="ld cat-finance"></div>Фінанси</div>
         <div class="li"><div class="ld cat-domestic"></div>Побут</div>
-        <div class="lhint">✏️ наведи → редагуй</div>
+        <button class="df-toggle-btn" id="dfToggleBtn" onclick="toggleDateFilter()" title="Фільтр по датах">
+          Фільтр
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 3h14M4 8h8M7 13h2"/></svg>
+        </button>
       </div>
       <div id="dateFilterWrap" style="display:none;margin-bottom:12px;">
         <div style="background:var(--paper);border:1px solid var(--border);border-radius:10px;padding:12px 14px;">
@@ -802,9 +804,21 @@ function clearDateFilter() {
   if (f) f.tasks.forEach(t => { const w = document.getElementById('w-' + t.id); if (w) w.style.display = ''; });
 }
 
-function showDateFilterPanel() {
+function toggleDateFilter() {
   const wrap = document.getElementById('dateFilterWrap');
-  if (wrap) wrap.style.display = '';
+  const btn = document.getElementById('dfToggleBtn');
+  const isOpen = wrap.style.display !== 'none';
+  wrap.style.display = isOpen ? 'none' : '';
+  btn.classList.toggle('active', !isOpen);
+  if (isOpen) clearDateFilter();
+}
+
+function showDateFilterPanel() {
+  // Panel is hidden by default, toggled by button — reset state on folder switch
+  const wrap = document.getElementById('dateFilterWrap');
+  const btn = document.getElementById('dfToggleBtn');
+  if (wrap) wrap.style.display = 'none';
+  if (btn) btn.classList.remove('active');
 }
 const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 const num = v => parseFloat(v) || 0;
@@ -1112,12 +1126,19 @@ function updateStats() {
   const f = curFolder();
   let done = 0, total = f.tasks.length;
   f.tasks.forEach(t => { if (((f.state||{})[t.id]||{}).status === 'done') done++; });
-  const pct = Math.round(done / total * 100);
-  ['sd', 'hd'].forEach(id => document.getElementById(id).textContent = done);
+  const pct = total > 0 ? Math.round(done / total * 100) : 0;
+  // bdash stats
+  document.getElementById('sd').textContent = done;
   document.getElementById('st').textContent = total;
+  document.getElementById('sp').textContent = pct + '%';
+  // topbar mini stats
+  document.getElementById('hd').textContent = done;
   document.getElementById('ht').textContent = total;
-  ['sp', 'hp'].forEach(id => document.getElementById(id).textContent = pct + '%');
+  document.getElementById('hp').textContent = pct + '%';
+  // progress bars
   document.getElementById('pf').style.width = pct + '%';
+  const sb = document.getElementById('stepsBar');
+  if (sb) sb.style.width = pct + '%';
 }
 
 // ═══════════════════════════════════
