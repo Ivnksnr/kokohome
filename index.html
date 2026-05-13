@@ -103,6 +103,39 @@ body{font-family:'Google Sans',sans-serif;background:var(--bg);color:var(--ink);
 .content{flex:1;padding:18px 18px 60px;}
 .inner{max-width:820px;margin:0 auto;}
 
+/* TWO PANE */
+.two-pane{display:flex;gap:16px;align-items:flex-start;max-width:1200px;margin:0 auto;}
+.pane-left{flex:1;min-width:0;}
+.pane-right{width:280px;flex-shrink:0;position:sticky;top:70px;}
+
+/* NOTES PANEL */
+.notes-panel{background:var(--card);border:1px solid var(--border);border-radius:13px;overflow:hidden;}
+.notes-hdr{padding:10px 14px;display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--border);}
+.notes-title{font-size:14px;font-weight:600;color:var(--ink);flex:1;}
+.notes-edit-btn,.notes-copy-btn{display:flex;align-items:center;gap:4px;padding:3px 8px;border-radius:6px;border:1px solid var(--border);background:transparent;font-size:12px;color:var(--ink3);cursor:pointer;transition:all .15s;font-family:'Google Sans',sans-serif;}
+.notes-edit-btn:hover,.notes-copy-btn:hover{background:var(--bg);color:var(--ink);}
+.notes-copy-btn{gap:5px;}
+.notes-view{padding:12px 14px;}
+.notes-empty{font-size:13px;color:var(--ink4);font-style:italic;}
+.notes-text{font-size:13px;color:var(--ink2);line-height:1.6;white-space:pre-wrap;word-break:break-word;}
+.notes-links{margin-top:10px;display:flex;flex-direction:column;gap:4px;}
+.notes-link-item{display:flex;align-items:center;gap:5px;font-size:12px;}
+.notes-link-item a{color:var(--primary);text-decoration:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.notes-link-item a:hover{text-decoration:underline;}
+.notes-form{padding:10px 14px;}
+.notes-textarea{width:100%;border:1.5px solid rgba(0,0,0,.1);border-radius:7px;padding:7px 9px;font-family:'Google Sans',sans-serif;font-size:13px;color:var(--ink);background:var(--paper);outline:none;resize:vertical;min-height:100px;transition:border-color .15s;line-height:1.5;}
+.notes-textarea:focus{border-color:rgba(0,0,0,.25);}
+
+@media(max-width:900px){
+  .two-pane{flex-direction:column;}
+  .pane-right{width:100%;position:static;}
+  .notes-panel .notes-hdr{cursor:pointer;}
+  .notes-panel .notes-hdr::after{content:'▾';font-size:13px;color:var(--ink3);margin-left:auto;}
+  .notes-panel.collapsed .notes-hdr::after{content:'▸';}
+  .notes-panel.collapsed .notes-view,
+  .notes-panel.collapsed .notes-form{display:none!important;}
+}
+
 /* BUDGET DASH */
 .bdash{background:var(--card);border:1px solid var(--border);border-radius:13px;margin-bottom:16px;overflow:hidden;}
 .bdash-hdr{padding:12px 16px 10px;display:flex;align-items:center;justify-content:space-between;}
@@ -336,8 +369,9 @@ body{font-family:'Google Sans',sans-serif;background:var(--bg);color:var(--ink);
 
   <!-- LIST VIEW -->
   <div id="listView" class="content" style="display:block;">
-    <div class="inner">
-      <div class="bdash" id="bdash">
+    <div class="two-pane">
+      <div class="pane-left">
+        <div class="bdash" id="bdash">
         <div class="bdash-hdr">
           <h3>💰 Бюджет розділу</h3>
           <div style="display:flex;align-items:center;gap:8px;margin-left:auto;">
@@ -403,7 +437,35 @@ body{font-family:'Google Sans',sans-serif;background:var(--bg);color:var(--ink);
         </div>
       </div>
       <div id="taskList"></div>
-    </div>
+      </div><!-- /pane-left -->
+
+      <div class="pane-right">
+        <div class="notes-panel" id="notesPanel">
+          <div class="notes-hdr">
+            <span class="notes-title">📝 Нотатки</span>
+            <button class="notes-edit-btn" id="notesEditBtn" onclick="toggleNotesEdit()" title="Редагувати">✏️</button>
+            <button class="notes-copy-btn" onclick="copyNotesToClipboard()" title="Копіювати в Obsidian">
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="9" height="12" rx="2"/><path d="M3 4H2a1 1 0 00-1 1v9a2 2 0 002 2h8a1 1 0 001-1v-1"/></svg>
+              Копіювати
+            </button>
+          </div>
+          <div class="notes-view" id="notesView">
+            <div class="notes-empty" id="notesEmpty">Немає нотаток. Натисни ✏️ щоб додати.</div>
+            <div class="notes-text" id="notesText"></div>
+            <div class="notes-links" id="notesLinks"></div>
+          </div>
+          <div class="notes-form" id="notesForm" style="display:none;">
+            <textarea class="notes-textarea" id="notesTextarea" placeholder="Нотатки, спостереження, плани..."></textarea>
+            <div style="font-size:11px;color:var(--ink3);margin:6px 0 3px;text-transform:uppercase;letter-spacing:.7px;font-weight:500;">Посилання (по одному на рядок)</div>
+            <textarea class="notes-textarea" id="notesLinksInput" placeholder="https://example.com&#10;https://another.com" style="min-height:60px;"></textarea>
+            <div style="display:flex;gap:6px;margin-top:8px;justify-content:flex-end;">
+              <button class="btnc" onclick="cancelNotesEdit()">Скасувати</button>
+              <button class="btns" onclick="saveNotes()">Зберегти</button>
+            </div>
+          </div>
+        </div>
+      </div><!-- /pane-right -->
+    </div><!-- /two-pane -->
   </div>
 
   <!-- TIMELINE VIEW -->
@@ -1140,7 +1202,7 @@ function renderAll() {
 
   updateStats();
   updateBudgetDash();
-  // Re-apply date filter if active
+  renderNotes();
   if (dfActive) applyDateFilter();
 }
 
@@ -1365,8 +1427,85 @@ function openAddFolder() {
 }
 
 // ═══════════════════════════════════
-// EDIT FOLDER
+// NOTES PANEL
 // ═══════════════════════════════════
+function renderNotes() {
+  const f = curFolder();
+  const text = f.notes || '';
+  const links = f.links || [];
+  const isEmpty = !text && !links.length;
+
+  document.getElementById('notesEmpty').style.display = isEmpty ? '' : 'none';
+  document.getElementById('notesText').textContent = text;
+  document.getElementById('notesText').style.display = text ? '' : 'none';
+
+  const linksEl = document.getElementById('notesLinks');
+  linksEl.innerHTML = '';
+  links.forEach(url => {
+    if (!url.trim()) return;
+    const div = document.createElement('div');
+    div.className = 'notes-link-item';
+    div.innerHTML = `<svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M10 6L14 2M14 2H10M14 2v4"/><path d="M7 3H3a1 1 0 00-1 1v9a1 1 0 001 1h9a1 1 0 001-1v-4"/></svg><a href="${esc(url)}" target="_blank">${esc(url)}</a>`;
+    linksEl.appendChild(div);
+  });
+
+  // Mobile: start collapsed, bind header click
+  const panel = document.getElementById('notesPanel');
+  const hdr = panel.querySelector('.notes-hdr');
+  if (window.innerWidth <= 900) {
+    if (!panel.classList.contains('accordion-init')) {
+      panel.classList.add('collapsed', 'accordion-init');
+      hdr.addEventListener('click', (e) => {
+        if (window.innerWidth > 900) return;
+        if (e.target.closest('.notes-edit-btn') || e.target.closest('.notes-copy-btn')) return;
+        panel.classList.toggle('collapsed');
+      });
+    }
+  } else {
+    panel.classList.remove('collapsed');
+  }
+}
+
+function toggleNotesEdit() {
+  const f = curFolder();
+  document.getElementById('notesTextarea').value = f.notes || '';
+  document.getElementById('notesLinksInput').value = (f.links || []).join('\n');
+  document.getElementById('notesView').style.display = 'none';
+  document.getElementById('notesForm').style.display = '';
+  document.getElementById('notesEditBtn').style.display = 'none';
+}
+
+function cancelNotesEdit() {
+  document.getElementById('notesView').style.display = '';
+  document.getElementById('notesForm').style.display = 'none';
+  document.getElementById('notesEditBtn').style.display = '';
+}
+
+function saveNotes() {
+  const f = curFolder();
+  f.notes = document.getElementById('notesTextarea').value.trim();
+  f.links = document.getElementById('notesLinksInput').value
+    .split('\n').map(l => l.trim()).filter(Boolean);
+  saveDB(DB);
+  cancelNotesEdit();
+  renderNotes();
+}
+
+function copyNotesToClipboard() {
+  const f = curFolder();
+  const text = f.notes || '';
+  const links = (f.links || []).filter(Boolean);
+  let md = `## ${f.emoji} ${f.name}\n\n`;
+  if (text) md += text + '\n\n';
+  if (links.length) md += links.map(l => `- ${l}`).join('\n') + '\n';
+  navigator.clipboard.writeText(md.trim()).then(() => {
+    const btn = document.querySelector('.notes-copy-btn');
+    const orig = btn.innerHTML;
+    btn.innerHTML = '✅ Скопійовано';
+    btn.style.color = 'var(--green)';
+    setTimeout(() => { btn.innerHTML = orig; btn.style.color = ''; }, 2000);
+  });
+}
 const FOLDER_COLORS = [
   '#c97090','#c98d30','#6e7fc9','#5ba88a','#b05bc9',
   '#c95b5b','#1d62a8','#dc143c','#4a9c6d','#8b6cc9',
