@@ -535,7 +535,20 @@ body{
 }
 
 /* === TASK CARD === */
-.tw{margin-bottom:4px;}
+.tw{margin-bottom:4px;position:relative;transition:opacity .15s,box-shadow .15s;}
+.drag-handle{
+  position:absolute;left:-22px;top:50%;
+  transform:translateY(-50%);
+  opacity:0;cursor:grab;color:var(--ink4);
+  padding:8px 4px;transition:opacity .15s,color .15s;
+  display:flex;align-items:center;justify-content:center;
+}
+.tw:hover .drag-handle{opacity:.55;}
+.drag-handle:hover{opacity:1!important;color:var(--ink2);}
+.drag-handle:active{cursor:grabbing;}
+.tw.dragging{opacity:.35;}
+.tw.drag-over-top{box-shadow:0 -2px 0 0 var(--primary);}
+.tw.drag-over-bottom{box-shadow:0 2px 0 0 var(--primary);}
 .card{
   border-radius:10px;
   overflow:hidden;
@@ -1784,7 +1797,10 @@ function renderTask(folder, task, container) {
   const wrap = document.createElement('div');
   wrap.className = 'tw';
   wrap.id = 'w-' + task.id;
-  wrap.innerHTML = `<div class="card" style="background:${bgColor}">
+  wrap.dataset.taskId = task.id;
+  wrap.dataset.sec = task.sec || '';
+  wrap.dataset.cat = t.cat || '';
+  wrap.innerHTML = `<svg class="drag-handle" draggable="true" width="10" height="14" viewBox="0 0 10 14" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><circle cx="3" cy="3" r="1.2"/><circle cx="7" cy="3" r="1.2"/><circle cx="3" cy="7" r="1.2"/><circle cx="7" cy="7" r="1.2"/><circle cx="3" cy="11" r="1.2"/><circle cx="7" cy="11" r="1.2"/></svg><div class="card" style="background:${bgColor}">
     <div class="task-main-row">
       <div class="cb ${done ? 'cb-done' : ''}" style="${done ? 'background:' + f.color + ';border-color:transparent' : ''}" onclick="td('${task.id}')">
         <svg class="ck" viewBox="0 0 10 10"><polyline points="1.5,5 4,7.5 8.5,2.5" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -2335,6 +2351,61 @@ function bgc(e, id) { if (e.target === document.getElementById(id)) { if (id ===
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') { cm(); closeAdd(); closeDelete(); closeFolderModal(); }
   if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') { if (document.getElementById('mbg').classList.contains('open')) sm(); else if (document.getElementById('addBg').classList.contains('open')) addStep(); }
+});
+
+// === DRAG & DROP TASKS ===
+let draggedTaskId = null, draggedSec = null, draggedCat = null;
+document.addEventListener('dragstart', (e) => {
+  const handle = e.target.closest && e.target.closest('.drag-handle');
+  if (!handle) return;
+  const tw = handle.closest('.tw');
+  if (!tw) return;
+  draggedTaskId = tw.dataset.taskId;
+  draggedSec = tw.dataset.sec;
+  draggedCat = tw.dataset.cat;
+  tw.classList.add('dragging');
+  e.dataTransfer.effectAllowed = 'move';
+  try { e.dataTransfer.setData('text/plain', draggedTaskId); } catch(_) {}
+});
+document.addEventListener('dragend', () => {
+  document.querySelectorAll('.tw').forEach(el => {
+    el.classList.remove('dragging','drag-over-top','drag-over-bottom');
+  });
+  draggedTaskId = null; draggedSec = null; draggedCat = null;
+});
+document.addEventListener('dragover', (e) => {
+  if (!draggedTaskId) return;
+  const tw = e.target.closest && e.target.closest('.tw');
+  if (!tw || tw.dataset.taskId === draggedTaskId) return;
+  if (tw.dataset.sec !== draggedSec || tw.dataset.cat !== draggedCat) return;
+  e.preventDefault();
+  document.querySelectorAll('.tw').forEach(el => {
+    if (el !== tw) el.classList.remove('drag-over-top','drag-over-bottom');
+  });
+  const rect = tw.getBoundingClientRect();
+  const before = e.clientY < rect.top + rect.height / 2;
+  tw.classList.toggle('drag-over-top', before);
+  tw.classList.toggle('drag-over-bottom', !before);
+});
+document.addEventListener('drop', (e) => {
+  if (!draggedTaskId) return;
+  const tw = e.target.closest && e.target.closest('.tw');
+  if (!tw || tw.dataset.taskId === draggedTaskId) return;
+  if (tw.dataset.sec !== draggedSec || tw.dataset.cat !== draggedCat) return;
+  e.preventDefault();
+  const targetId = tw.dataset.taskId;
+  const rect = tw.getBoundingClientRect();
+  const dropBefore = e.clientY < rect.top + rect.height / 2;
+  const f = curFolder();
+  const fromIdx = f.tasks.findIndex(t => t.id === draggedTaskId);
+  if (fromIdx === -1) return;
+  const [moved] = f.tasks.splice(fromIdx, 1);
+  const toIdx = f.tasks.findIndex(t => t.id === targetId);
+  if (toIdx === -1) { f.tasks.splice(fromIdx, 0, moved); return; }
+  f.tasks.splice(dropBefore ? toIdx : toIdx + 1, 0, moved);
+  saveDB(DB);
+  renderAll();
+  if (curView === 'timeline') rg();
 });
 
 // ═══════════════════════════════════
