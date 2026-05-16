@@ -1135,6 +1135,7 @@ body{
     <h3>Редагувати крок</h3>
     <div class="mf"><label>Назва</label><input type="text" id="mT"></div>
     <div class="mf"><label>Термін / Тиждень</label><input type="text" id="mW"></div>
+    <div class="mf"><label>Категорія</label><div class="pill-row" id="mCatPills"></div></div>
     <div class="mf"><label>Статус</label><div class="pill-row">
       <div class="pill active" data-s="none" onclick="ss('none')">Не розпочато</div>
       <div class="pill" data-s="done" onclick="ss('done')">✓ Виконано</div>
@@ -1606,7 +1607,7 @@ for (const f of DB.folders) {
 }
 let curView = 'list';
 let budgetOpen = true;
-let mId = null, mSt = 'none';
+let mId = null, mSt = 'none', mCat = null;
 let deleteId = null, deleteType = null;
 let addCat = 'medical', addSec = '';
 let selEmoji = '📁';
@@ -1623,6 +1624,7 @@ function getTask(folder, taskId) {
     label: st.label ?? def.label,
     week: st.week ?? (def.week || ''),
     status: st.status || 'none',
+    cat: st.cat ?? def.cat,
     note: st.note || '',
     link: st.link || '',
     est: num(st.est),
@@ -1916,6 +1918,17 @@ function om(id) {
   const f = curFolder();
   const t = getTask(f, id);
   mSt = t.status;
+  mCat = t.cat;
+  const mcp = document.getElementById('mCatPills');
+  mcp.innerHTML = '';
+  f.categories.forEach(c => {
+    const p = document.createElement('div');
+    p.className = 'pill' + (c === mCat ? ' active' : '');
+    p.dataset.c = c;
+    p.textContent = CAT_LABELS[c] || c;
+    p.onclick = () => { mCat = c; document.querySelectorAll('#mCatPills .pill').forEach(x => x.classList.toggle('active', x.dataset.c === c)); };
+    mcp.appendChild(p);
+  });
   document.getElementById('mT').value = t.label;
   document.getElementById('mW').value = t.week;
   document.getElementById('mN').value = t.note;
@@ -1946,6 +1959,7 @@ function sm() {
     label: document.getElementById('mT').value.trim() || getTask(f, savedId).label,
     week: document.getElementById('mW').value.trim(),
     status: mSt,
+    cat: mCat,
     note: document.getElementById('mN').value.trim(),
     link: document.getElementById('mL').value.trim(),
     est: num(document.getElementById('mEst').value),
