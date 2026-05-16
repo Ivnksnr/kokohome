@@ -2256,7 +2256,7 @@ function rg() {
   for (let w = 1; w <= WEEKS; w++) { h += `<div class="gwc ${w % 4 === 1 ? 'major' : ''}"><div class="gwn">${w}</div></div>`; }
   h += `</div><div class="gbody" style="position:relative">`;
 
-  const ds = localStorage.getItem('baby-start');
+  const ds = localStorage.getItem('baby-start') || '2026-03-06';
   if (ds) {
     const diff = Math.floor((new Date() - new Date(ds)) / 86400000);
     const cw = Math.min(Math.max(Math.floor(diff / 7) + 1, 1), 40);
