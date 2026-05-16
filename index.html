@@ -6,6 +6,7 @@
 <title>KOKOHOME</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Google+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script>try{document.documentElement.setAttribute('data-theme', localStorage.getItem('kokohome-theme')||'light');}catch(_){}</script>
 <style>
 :root{
   /* === WISPR FLOW DESIGN TOKENS === */
@@ -91,6 +92,94 @@
   --shadow-md:0 2px 8px rgba(26,26,26,.06);
   --shadow-lg:0 4px 16px rgba(26,26,26,.08);
 }
+
+/* === DARK THEME === */
+:root[data-theme="dark"]{
+  --bg:#0F0F0F;
+  --paper:#1A1A1A;
+  --card:#1A1A1A;
+  --card-hover:#222222;
+  --bg-active:#252525;
+  --bg-hero:#0A0A0A;
+  --border:#2E2E2E;
+  --border-mid:#3D3D3D;
+  --ink:#F5F5F5;
+  --ink2:#D5D5D5;
+  --ink3:#9A9A9A;
+  --ink4:#6A6A6A;
+  --primary:#8A6FF0;
+  --primary-bg:#1F1A35;
+  --primary-border:#3D2F6B;
+  --primary-hover:#A088FF;
+  --secondary:#3DBFAE;
+  --secondary-bg:#0F2624;
+  --secondary-border:#1F4A45;
+  --cat-milestone:#C49852;
+  --cat-medical:#8A6FF0;
+  --cat-finance:#3DBFAE;
+  --cat-domestic:#D8916A;
+  --cat-housing:#3DBFAE;
+  --cat-utility:#C49852;
+  --cat-renovation:#D8916A;
+  --cat-shopping:#D88AA8;
+  --card-milestone:#2A2418;
+  --card-medical:#1F1A35;
+  --card-finance:#0F2624;
+  --card-domestic:#2A1F18;
+  --card-utility:#2A2418;
+  --card-shopping:#2A1F26;
+  --green:#3DBFAE;
+  --red:#D87555;
+  --amber:#C49852;
+  --status-done-bg:#0F2624;
+  --status-done-border:#1F4A45;
+  --status-partial-bg:#2A2418;
+  --status-partial-border:#4A3F1E;
+  --status-skipped-bg:#2A1F18;
+  --status-skipped-border:#4A3F2E;
+  --cost-under:#3DBFAE;
+  --cost-under-bg:#0F2624;
+  --cost-over:#D87555;
+  --cost-over-bg:#2A1F18;
+  --shadow-sm:0 1px 2px rgba(0,0,0,.3);
+  --shadow-md:0 2px 8px rgba(0,0,0,.4);
+  --shadow-lg:0 4px 16px rgba(0,0,0,.5);
+}
+/* Sidebar hardcoded overrides for dark */
+:root[data-theme="dark"] .sb{background:#1A1A1A;border-right-color:#2E2E2E;}
+:root[data-theme="dark"] .sb-logo h1{color:#F5F5F5;}
+:root[data-theme="dark"] .fb:hover{background:#252525;}
+:root[data-theme="dark"] .fb.act{background:#2A2A2A;}
+:root[data-theme="dark"] .fn{color:#F5F5F5!important;}
+:root[data-theme="dark"] .fb.act .fn{color:#FFFFFF!important;}
+:root[data-theme="dark"] .fm{color:#9A9A9A!important;}
+:root[data-theme="dark"] .sb-folder-spacer{background:#1A1A1A;}
+:root[data-theme="dark"] .add-fb{border-color:#2E2E2E;color:#9A9A9A;}
+:root[data-theme="dark"] .add-fb:hover{border-color:#4D4D4D;color:#D5D5D5;background:#252525;}
+:root[data-theme="dark"] .sb-foot{color:#6A6A6A;}
+:root[data-theme="dark"] body{color-scheme:dark;}
+:root[data-theme="dark"] .add-btn{background:#F5F5F5;color:#0F0F0F;}
+:root[data-theme="dark"] .add-btn:hover{background:#FFFFFF;}
+:root[data-theme="dark"] .btns{background:#F5F5F5;color:#0F0F0F;}
+:root[data-theme="dark"] .btns:hover{background:#FFFFFF;}
+:root[data-theme="dark"] .cb{background:#1A1A1A;border-color:#4D4D4D;}
+:root[data-theme="dark"] .gband{filter:invert(1) hue-rotate(180deg);}
+:root[data-theme="dark"] .g-mslbl{filter:invert(1) hue-rotate(180deg);}
+
+/* Theme toggle button */
+.theme-toggle{
+  display:flex;align-items:center;justify-content:center;
+  width:32px;height:32px;border-radius:8px;
+  border:1px solid var(--border);background:transparent;
+  cursor:pointer;color:var(--ink2);flex-shrink:0;
+  transition:all .15s;font-family:inherit;
+}
+.theme-toggle:hover{background:var(--bg-active);color:var(--ink);}
+.theme-toggle svg{width:16px;height:16px;display:block;}
+.theme-toggle .icon-moon{display:none;}
+:root[data-theme="dark"] .theme-toggle .icon-sun{display:none;}
+:root[data-theme="dark"] .theme-toggle .icon-moon{display:block;}
+
 *{box-sizing:border-box;margin:0;padding:0;}
 body{
   font-family:'Inter','Google Sans',-apple-system,BlinkMacSystemFont,sans-serif;
@@ -1023,6 +1112,10 @@ body{
     </button>
     <div class="tb-title"><span class="tb-emoji" id="tbEmoji"></span><span id="tbTitle">Завантаження...</span></div>
     <div class="hstats"><b id="hd">0</b>/<span id="ht">0</span> · <b id="hp">0%</b></div>
+    <button class="theme-toggle" onclick="toggleTheme()" aria-label="Перемкнути тему" title="Перемкнути тему">
+      <svg class="icon-sun" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="3"/><path d="M8 1v2M8 13v2M15 8h-2M3 8H1M13 3l-1.4 1.4M4.4 11.6L3 13M13 13l-1.4-1.4M4.4 4.4L3 3"/></svg>
+      <svg class="icon-moon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9.5A6.5 6.5 0 1 1 6.5 2a5 5 0 0 0 7.5 7.5z"/></svg>
+    </button>
     <div class="vtoggle">
       <button class="vbtn active" id="btnL" onclick="sw('list')">☰ Список</button>
       <button class="vbtn" id="btnT" onclick="sw('timeline')">📅 Timeline</button>
@@ -2407,6 +2500,14 @@ document.addEventListener('drop', (e) => {
   renderAll();
   if (curView === 'timeline') rg();
 });
+
+// === THEME TOGGLE ===
+function toggleTheme(){
+  const cur = document.documentElement.getAttribute('data-theme') || 'light';
+  const next = cur === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  try{localStorage.setItem('kokohome-theme', next);}catch(_){}
+}
 
 // ═══════════════════════════════════
 // INIT
