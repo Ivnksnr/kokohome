@@ -56,6 +56,7 @@
   --cat-housing:#2D9B8A;
   --cat-utility:#8B6830;
   --cat-renovation:#A0512D;
+  --cat-shopping:#C97090;
 
   /* Card pastels */
   --card-milestone:#F7F1E5;
@@ -63,6 +64,7 @@
   --card-finance:#E8F7F5;
   --card-domestic:#F5EAE0;
   --card-utility:#F7F1E5;
+  --card-shopping:#F5E8EE;
 
   /* Status (mono with warmth) */
   --green:#2D9B8A;
@@ -572,6 +574,7 @@ body{
 .cat-housing{background:var(--cat-housing);}
 .cat-utility{background:var(--cat-utility);}
 .cat-renovation{background:var(--cat-renovation);}
+.cat-shopping{background:var(--cat-shopping);}
 
 .task-body{flex:1;min-width:0;}
 .task-title-row{
@@ -751,6 +754,7 @@ body{
 .gbar.cat-finance,.gbar.cat-housing{background:var(--card-finance);border-color:var(--cat-finance);color:var(--ink);}
 .gbar.cat-domestic,.gbar.cat-renovation{background:var(--card-domestic);border-color:var(--cat-domestic);color:var(--ink);}
 .gbar.cat-milestone,.gbar.cat-utility{background:var(--card-milestone);border-color:var(--cat-milestone);color:var(--ink);}
+.gbar.cat-shopping{background:var(--card-shopping);border-color:var(--cat-shopping);color:var(--ink);}
 .gcost{
   position:absolute;bottom:0;
   height:3px;border-radius:2px;pointer-events:none;
@@ -856,6 +860,7 @@ body{
 .pill[data-c=finance].active,.pill[data-c=housing].active{background:var(--cat-finance);}
 .pill[data-c=domestic].active,.pill[data-c=renovation].active{background:var(--cat-domestic);}
 .pill[data-c=milestone].active,.pill[data-c=utility].active{background:var(--cat-milestone);}
+.pill[data-c=shopping].active{background:var(--cat-shopping);}
 .pill[data-t=t1].active{background:var(--primary);}
 .pill[data-t=t2].active{background:var(--secondary);}
 .pill[data-t=t3].active{background:var(--cat-milestone);}
@@ -1060,6 +1065,7 @@ body{
         <div class="li"><div class="ld cat-medical"></div>Медицина</div>
         <div class="li"><div class="ld cat-finance"></div>Фінанси</div>
         <div class="li"><div class="ld cat-domestic"></div>Побут</div>
+        <div class="li"><div class="ld cat-shopping"></div>Покупки</div>
         <button class="df-toggle-btn" id="dfToggleBtn" onclick="toggleDateFilter()" title="Фільтр по датах">
           Фільтр
           <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 3h14M4 8h8M7 13h2"/></svg>
@@ -1314,6 +1320,13 @@ for (const f of DB.folders) {
   for (const defFolder of defaults.folders) {
     if (!existingIds.has(defFolder.id) && (defFolder.id === 'birth_pl' || defFolder.id === 'birth_ua')) {
       remote.folders.push(defFolder);
+      migrated = true;
+    }
+  }
+  // Migration: ensure 'shopping' category exists in every folder
+  for (const f of remote.folders) {
+    if (Array.isArray(f.categories) && !f.categories.includes('shopping')) {
+      f.categories.push('shopping');
       migrated = true;
     }
   }
@@ -1577,11 +1590,11 @@ function setFolderCurrency(cur) {
 const CAT_LABELS = {
   milestone: '⭐ Milestone', medical: '🩺 Медицина', finance: '💰 Фінанси',
   domestic: '🏠 Побут', housing: '🏘️ Житло', utility: '💡 Комунальні',
-  renovation: '🔨 Ремонт'
+  renovation: '🔨 Ремонт', shopping: '🛒 Покупки'
 };
 const CAT_DOT = {
   milestone: '#e07a20', medical: '#c97090', finance: '#5b80d4',
-  domestic: '#3d9966', housing: '#5b80d4', utility: '#c98d30', renovation: '#3d9966',
+  domestic: '#3d9966', housing: '#5b80d4', utility: '#c98d30', renovation: '#3d9966', shopping: '#c97090',
 };
 
 // ═══════════════════════════════════
@@ -1766,7 +1779,7 @@ function renderTask(folder, task, container) {
   }
 
   const dotColor = CAT_DOT[t.cat] || '#737373';
-  const bgColor = t.ms ? 'var(--card-milestone)' : t.cat === 'medical' ? 'var(--card-medical)' : t.cat === 'finance' || t.cat === 'housing' ? 'var(--card-finance)' : t.cat === 'utility' ? 'var(--card-utility)' : 'var(--card-domestic)';
+  const bgColor = t.ms ? 'var(--card-milestone)' : t.cat === 'medical' ? 'var(--card-medical)' : t.cat === 'finance' || t.cat === 'housing' ? 'var(--card-finance)' : t.cat === 'utility' ? 'var(--card-utility)' : t.cat === 'shopping' ? 'var(--card-shopping)' : 'var(--card-domestic)';
   const customBadge = isCustom ? '<span class="custom-badge">власний</span>' : '';
 
   const wrap = document.createElement('div');
