@@ -725,7 +725,27 @@ body{
   transition:filter .15s,transform .15s;
   border:1.5px solid transparent;
 }
-.gbar:hover{filter:brightness(.95);transform:translateY(-1px);}
+.gbar:hover{filter:brightness(.95);transform:translateY(-1px);z-index:50;}
+.gbar[data-tt]:hover::after{
+  content:attr(data-tt);
+  position:absolute;
+  bottom:calc(100% + 8px);left:0;
+  background:#0a0a0a;color:#fff;
+  padding:8px 12px;border-radius:8px;
+  font-size:12px;font-weight:500;
+  line-height:1.4;white-space:pre-line;
+  max-width:320px;z-index:100;
+  pointer-events:none;
+  box-shadow:0 4px 16px rgba(0,0,0,.15);
+  letter-spacing:-.005em;
+}
+.gbar[data-tt]:hover::before{
+  content:'';position:absolute;
+  bottom:calc(100% + 3px);left:10px;
+  border:5px solid transparent;
+  border-top-color:#0a0a0a;
+  z-index:100;pointer-events:none;
+}
 .gbar.done{opacity:.42;}
 .gbar.cat-medical{background:var(--card-medical);border-color:var(--cat-medical);color:var(--ink);}
 .gbar.cat-finance,.gbar.cat-housing{background:var(--card-finance);border-color:var(--cat-finance);color:var(--ink);}
@@ -2277,7 +2297,7 @@ function rg() {
       const sp = Math.min(t.spent / t.est * 100, 100).toFixed(1);
       spentBar = `<div class="gcost ${t.spent > t.est ? 'over' : 'spent'}" style="left:${bL}%;width:${(parseFloat(bW) * parseFloat(sp) / 100).toFixed(2)}%"></div>`;
     }
-    h += `<div class="grow"><div class="glbl ${lc}" onclick="om('${task.id}')" title="${esc(t.label + np)}">${esc(t.label)}</div><div class="gtrack">${spentBar}<div class="${bc}" style="left:${bL}%;width:${bW}%;min-width:5px" onclick="om('${task.id}')">${parseFloat(bW) > 5 ? (task.s === task.e ? 'тиж.' + task.s : task.s + '–' + task.e) : ''}</div></div></div>`;
+    h += `<div class="grow"><div class="glbl ${lc}" onclick="om('${task.id}')" title="${esc(t.label + np)}">${esc(t.label)}</div><div class="gtrack">${spentBar}<div class="${bc}" style="left:${bL}%;width:${bW}%;min-width:5px" onclick="om('${task.id}')" data-tt="${esc(t.label + (t.note ? '\n' + t.note : ''))}">${parseFloat(bW) > 5 ? (task.s === task.e ? 'тиж.' + task.s : task.s + '–' + task.e) : ''}</div></div></div>`;
   });
 
   h += `</div><div class="g-bottom"><label>📅 Дата початку:</label><input type="date" value="${ds || ''}" onchange="setSt(this.value)"></div>`;
