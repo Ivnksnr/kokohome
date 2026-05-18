@@ -562,12 +562,36 @@ body{
   transition:width .5s ease;
   background:var(--primary)!important;
 }
+.add-btn-mini{
+  background:#0A0A0A;color:#fff;
+  border:none;padding:5px 10px;
+  border-radius:7px;
+  font-family:inherit;font-size:13px;font-weight:500;
+  cursor:pointer;flex-shrink:0;
+  white-space:nowrap;
+  transition:background .15s;
+}
+.add-btn-mini:hover{background:#262626;}
+:root[data-theme="dark"] .add-btn-mini{background:#F5F5F5;color:#0A0A0A;}
+:root[data-theme="dark"] .add-btn-mini:hover{background:#FFFFFF;}
 .legend-row{
   display:flex;gap:14px;flex-wrap:nowrap;
   padding:10px 4px;margin-bottom:14px;
   align-items:center;overflow-x:auto;
   white-space:nowrap;
 }
+.add-btn-mini{
+  background:#0A0A0A;color:#fff;
+  border:none;padding:5px 10px;
+  border-radius:7px;
+  font-family:inherit;font-size:13px;font-weight:500;
+  cursor:pointer;flex-shrink:0;
+  white-space:nowrap;
+  transition:background .15s;
+}
+.add-btn-mini:hover{background:#262626;}
+:root[data-theme="dark"] .add-btn-mini{background:#F5F5F5;color:#0A0A0A;}
+:root[data-theme="dark"] .add-btn-mini:hover{background:#FFFFFF;}
 .legend-row .df-toggle-btn{margin-left:auto;}
 
 /* === LEGEND === */
@@ -1113,7 +1137,7 @@ body{
     <button class="burger" onclick="toggleSidebar()" aria-label="Меню">
       <span></span><span></span><span></span>
     </button>
-    <div class="tb-title"><span class="tb-emoji" id="tbEmoji"></span><span id="tbTitle">Завантаження...</span></div>
+    <div class="tb-title"><span id="tbTitle">Завантаження...</span></div>
     <div class="hstats"><b id="hd">0</b>/<span id="ht">0</span> · <b id="hp">0%</b></div>
     <button class="theme-toggle" onclick="toggleTheme()" aria-label="Перемкнути тему" title="Перемкнути тему">
       <svg class="icon-sun" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="3"/><path d="M8 1v2M8 13v2M15 8h-2M3 8H1M13 3l-1.4 1.4M4.4 11.6L3 13M13 13l-1.4-1.4M4.4 4.4L3 3"/></svg>
@@ -1123,10 +1147,7 @@ body{
       <button class="vbtn active" id="btnL" onclick="sw('list')">☰ Список</button>
       <button class="vbtn" id="btnT" onclick="sw('timeline')">📅 Timeline</button>
     </div>
-    <button class="add-btn" onclick="openAdd()">
-      <svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M7 1v12M1 7h12"/></svg>
-      Новий крок
-    </button>
+    
     <div class="pbar"><div class="pfill" id="pf" style="width:0%"></div></div>
   </div>
 
@@ -1167,6 +1188,7 @@ body{
         </div>
       </div>
       <div class="legend-row">
+        <button class="add-btn-mini" onclick="openAdd()">+ Новий крок</button>
         <div class="li"><div class="ld" style="background:var(--cat-milestone)"></div>Milestone</div>
         <div class="li"><div class="ld cat-medical"></div>Медицина</div>
         <div class="li"><div class="ld cat-finance"></div>Фінанси</div>
@@ -1814,7 +1836,6 @@ function selectFolder(id) {
 // ═══════════════════════════════════
 function updateTopbar() {
   const f = curFolder();
-  document.getElementById('tbEmoji').textContent = f.emoji;
   document.getElementById('tbTitle').textContent = f.name;
   document.getElementById('pf').style.background = f.color;
 }
