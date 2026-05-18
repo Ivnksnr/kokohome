@@ -11,7 +11,7 @@
 :root{
   /* === WISPR FLOW DESIGN TOKENS === */
   /* Backgrounds — warm off-white */
-  --bg:#FFFFFF;
+  --bg:#F4F4F4;
   --paper:#FFFFFF;
   --card:#FFFFFF;
   --card-hover:#FAFAF5;
@@ -329,7 +329,7 @@ body{
   position:sticky;top:0;z-index:50;
 }
 .tb-title{
-  font-size:22px;font-weight:600;
+  font-size:28px;font-weight:600;
   letter-spacing:-.02em;display:flex;
   align-items:center;gap:8px;
   color:var(--ink);
@@ -349,12 +349,12 @@ body{
 .hstats b{color:var(--ink);font-weight:600;}
 
 .vtoggle{
-  display:flex;background:var(--bg-active);
-  border-radius:8px;padding:3px;gap:2px;
+  display:flex;background:#EDEDED;
+  border-radius:9px;padding:3px;gap:2px;
   margin-left:auto;flex-shrink:0;
 }
 .vbtn{
-  padding:6px 12px;border-radius:6px;border:none;
+  padding:5px 10px;border-radius:6px;border:none;
   font-family:inherit;font-size:13px;font-weight:500;
   cursor:pointer;background:transparent;color:var(--ink3);
   transition:all .15s;white-space:nowrap;
@@ -594,16 +594,19 @@ body{
   box-shadow:var(--shadow-sm);
 }
 .thdr{
-  padding:18px 24px;
+  padding:10px 14px;margin-top:8px;
   display:flex;align-items:center;
   justify-content:space-between;
   cursor:pointer;user-select:none;
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:12px;
   transition:background .15s;
 }
-.thdr:hover{background:var(--bg-active);}
+.thdr:hover{background:#FAFAFA;}
 .thdr h2{
-  font-size:18px;font-weight:600;
-  letter-spacing:-.02em;color:var(--ink);
+  font-size:17px;font-weight:600;
+  letter-spacing:-.01em;color:var(--ink);
 }
 .thdr .wk{
   font-size:13px;font-weight:400;
@@ -639,14 +642,14 @@ body{
 .tw.drag-over-top{box-shadow:0 -2px 0 0 var(--primary);}
 .tw.drag-over-bottom{box-shadow:0 2px 0 0 var(--primary);}
 .card{
-  border-radius:10px;
+  border-radius:9px;
   overflow:hidden;
-  border:1px solid var(--border);
+  border:1px solid rgba(0,0,0,.06);
   transition:box-shadow .15s,border-color .15s;
 }
 .card:hover{
-  box-shadow:var(--shadow-md);
-  border-color:var(--border-mid);
+  box-shadow:var(--shadow-sm);
+  border-color:rgba(0,0,0,.1);
 }
 .task-main-row{
   display:flex;align-items:flex-start;
