@@ -618,16 +618,16 @@ body{
   box-shadow:var(--shadow-sm);
 }
 .thdr{
-  padding:10px 14px;margin-top:8px;
+  padding:14px 18px;margin-top:0;
   display:flex;align-items:center;
   justify-content:space-between;
   cursor:pointer;user-select:none;
   background:var(--card);
-  border:1px solid var(--border);
-  border-radius:12px;
+  border-bottom:1px solid var(--border);
   transition:background .15s;
 }
 .thdr:hover{background:#FAFAFA;}
+.collapsed .thdr{border-bottom-color:transparent;}
 .thdr h2{
   font-size:17px;font-weight:600;
   letter-spacing:-.01em;color:var(--ink);
@@ -642,7 +642,7 @@ body{
   transition:transform .2s;opacity:.5;flex-shrink:0;
 }
 .collapsed .chev{transform:rotate(-90deg);}
-.tbody{padding:10px 18px 18px;}
+.tbody{padding:14px 18px 18px;background:var(--card);}
 .collapsed .tbody{display:none;}
 .slbl{
   font-size:11px;text-transform:uppercase;
@@ -1182,7 +1182,7 @@ body{
             <div class="bbar-bg"><div class="bbar-fill" id="bBar" style="width:0%;background:var(--ink)"></div></div>
           </div>
           <div class="bbar-wrap">
-            <div class="bbar-labels"><span>Виконання кроків</span><span id="hp">0%</span></div>
+            <div class="bbar-labels"><span>Виконання кроків</span><span id="stepsBarLbl">0%</span></div>
             <div class="bbar-bg"><div class="bbar-fill" id="stepsBar" style="width:0%;background:var(--ink)"></div></div>
           </div>
         </div>
@@ -2020,6 +2020,8 @@ function updateStats() {
   document.getElementById('pf').style.width = pct + '%';
   const sb = document.getElementById('stepsBar');
   if (sb) sb.style.width = pct + '%';
+  const sbLbl = document.getElementById('stepsBarLbl');
+  if (sbLbl) sbLbl.textContent = pct + '%';
 }
 
 // ═══════════════════════════════════
