@@ -593,6 +593,46 @@ body{
 :root[data-theme="dark"] .add-btn-mini{background:#F5F5F5;color:#0A0A0A;}
 :root[data-theme="dark"] .add-btn-mini:hover{background:#FFFFFF;}
 .legend-row .df-toggle-btn{margin-left:auto;}
+.cat-mgr-btn{
+  display:flex;align-items:center;justify-content:center;
+  width:28px;height:28px;border-radius:7px;
+  border:1px solid var(--border);background:transparent;
+  color:var(--ink3);cursor:pointer;flex-shrink:0;
+  transition:all .15s;
+}
+.cat-mgr-btn:hover{background:var(--bg-active);color:var(--ink);border-color:var(--border-mid);}
+.cat-mgr-btn svg{display:block;}
+.cat-mgr-row{
+  display:flex;align-items:center;gap:8px;
+  padding:8px;border-radius:9px;
+  border:1px solid var(--border);background:var(--paper);
+}
+.cat-mgr-row .cat-swatch{
+  width:26px;height:26px;border-radius:7px;
+  border:2px solid transparent;flex-shrink:0;cursor:pointer;
+  position:relative;transition:transform .12s;
+}
+.cat-mgr-row .cat-swatch:hover{transform:scale(1.08);}
+.cat-mgr-row .cat-swatch input[type="color"]{
+  position:absolute;inset:0;opacity:0;cursor:pointer;
+  border:none;padding:0;background:transparent;
+}
+.cat-mgr-row input.cat-label-in{
+  flex:1;border:1.5px solid transparent;
+  border-radius:6px;padding:6px 10px;
+  font-family:inherit;font-size:14px;
+  color:var(--ink);background:transparent;outline:none;
+  transition:all .12s;
+}
+.cat-mgr-row input.cat-label-in:hover{background:var(--bg-active);}
+.cat-mgr-row input.cat-label-in:focus{background:var(--paper);border-color:var(--primary);}
+.cat-mgr-row .cat-del-btn{
+  width:26px;height:26px;border-radius:6px;
+  border:none;background:transparent;color:var(--ink4);
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  font-size:14px;transition:all .12s;flex-shrink:0;
+}
+.cat-mgr-row .cat-del-btn:hover{background:var(--cost-over-bg);color:var(--red);}
 
 /* === LEGEND === */
 .li{
@@ -1187,13 +1227,12 @@ body{
           </div>
         </div>
       </div>
-      <div class="legend-row">
+      <div class="legend-row" id="legendRow">
         <button class="add-btn-mini" onclick="openAdd()">+ Новий крок</button>
-        <div class="li"><div class="ld" style="background:var(--cat-milestone)"></div>Milestone</div>
-        <div class="li"><div class="ld cat-medical"></div>Медицина</div>
-        <div class="li"><div class="ld cat-finance"></div>Фінанси</div>
-        <div class="li"><div class="ld cat-domestic"></div>Побут</div>
-        <div class="li"><div class="ld cat-shopping"></div>Покупки</div>
+        <span id="legendPills" style="display:contents;"></span>
+        <button class="cat-mgr-btn" onclick="openCatManager()" title="Категорії розділу" aria-label="Категорії розділу">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="2"/><path d="M8 1v2M8 13v2M15 8h-2M3 8H1M13 3l-1.4 1.4M4.4 11.6L3 13M13 13l-1.4-1.4M4.4 4.4L3 3"/></svg>
+        </button>
         <button class="df-toggle-btn" id="dfToggleBtn" onclick="toggleDateFilter()" title="Фільтр по датах">
           Фільтр
           <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 3h14M4 8h8M7 13h2"/></svg>
@@ -1340,6 +1379,19 @@ body{
   </div>
 </div>
 
+<!-- CATEGORY MANAGER -->
+<div class="mbg" id="catMgrBg" onclick="bgc(event,'catMgrBg')">
+  <div class="modal" style="max-width:520px;">
+    <h3>⚙ Категорії розділу</h3>
+    <div style="font-size:12px;color:var(--ink3);margin-bottom:14px;line-height:1.5;">
+      Кожен розділ має свій набір категорій. Клік по кружечку — змінити колір. Щоб видалити — натисни ✕ (якщо категорія використовується у кроках, з'явиться попередження).
+    </div>
+    <div id="catMgrList" style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px;"></div>
+    <button class="btnc" onclick="cmgrAdd()" style="width:100%;padding:10px;border-style:dashed;">+ Додати категорію</button>
+    <div class="mact"><button class="btnc" onclick="closeCatManager()">Скасувати</button><button class="btns" onclick="saveCatManager()">Зберегти</button></div>
+  </div>
+</div>
+
 <!-- DELETE -->
 <div class="del-confirm" id="delBg">
   <div class="del-box">
@@ -1429,6 +1481,7 @@ for (const f of DB.folders) {
   if (!f.state) f.state = {};
   if (!Array.isArray(f.tasks)) f.tasks = [];
   if (!Array.isArray(f.sections)) f.sections = [];
+  migrateCategories(f);
 }
     if (!DB.folders || DB.folders.length === 0) DB = defaultDB();
     await sbSave(DB);
@@ -1452,12 +1505,16 @@ for (const f of DB.folders) {
       migrated = true;
     }
   }
-  // Migration: ensure 'shopping' category exists in every folder
+  // Migration: ensure 'shopping' category exists in legacy string-based folders
   for (const f of remote.folders) {
-    if (Array.isArray(f.categories) && !f.categories.includes('shopping')) {
+    if (Array.isArray(f.categories) && f.categories.length && typeof f.categories[0] === 'string' && !f.categories.includes('shopping')) {
       f.categories.push('shopping');
       migrated = true;
     }
+  }
+  // Migration: convert string categories to objects (new schema)
+  for (const f of remote.folders) {
+    if (migrateCategories(f)) migrated = true;
   }
   if (migrated) {
     DB = remote;
@@ -1726,6 +1783,44 @@ const CAT_DOT = {
   domestic: '#3d9966', housing: '#5b80d4', utility: '#c98d30', renovation: '#3d9966', shopping: '#c97090',
 };
 
+// === CATEGORY HELPERS (new object-based schema) ===
+function catFromDefault(cid) {
+  const rawLabel = CAT_LABELS[cid] || cid;
+  const cleanLabel = rawLabel.replace(/^[^\s]+\s/, '') || cid;
+  return { id: cid, label: cleanLabel, color: CAT_DOT[cid] || '#737373' };
+}
+function findCat(folder, catId) {
+  if (!folder || !Array.isArray(folder.categories)) return catFromDefault(catId || 'milestone');
+  const found = folder.categories.find(c => c && c.id === catId);
+  return found || catFromDefault(catId || (folder.categories[0] && folder.categories[0].id) || 'milestone');
+}
+function migrateCategories(folder) {
+  if (!Array.isArray(folder.categories) || folder.categories.length === 0) {
+    folder.categories = [catFromDefault('milestone')];
+    return true;
+  }
+  if (typeof folder.categories[0] === 'string') {
+    folder.categories = folder.categories.map(cid => catFromDefault(cid));
+    return true;
+  }
+  // Ensure all entries have required fields
+  let fixed = false;
+  folder.categories = folder.categories.map(c => {
+    if (!c || typeof c !== 'object') { fixed = true; return catFromDefault('milestone'); }
+    if (!c.id || !c.color || !c.label) { fixed = true; return { ...catFromDefault(c.id || 'milestone'), ...c }; }
+    return c;
+  });
+  return fixed;
+}
+function hexWithAlpha(hex, alphaHex) {
+  if (!hex || typeof hex !== 'string') return '#f5f5f5';
+  hex = hex.trim();
+  if (!hex.startsWith('#')) hex = '#' + hex;
+  if (hex.length === 4) hex = '#' + hex[1]+hex[1] + hex[2]+hex[2] + hex[3]+hex[3];
+  if (hex.length === 7) return hex + alphaHex;
+  return hex;
+}
+
 // ═══════════════════════════════════
 // STATE
 // ═══════════════════════════════════
@@ -1735,6 +1830,7 @@ for (const f of DB.folders) {
   if (!f.state) f.state = {};
   if (!Array.isArray(f.tasks)) f.tasks = [];
   if (!Array.isArray(f.sections)) f.sections = [];
+  migrateCategories(f);
 }
 let curView = 'list';
 let budgetOpen = true;
@@ -1907,8 +2003,9 @@ function renderTask(folder, task, container) {
     </div>`;
   }
 
-  const dotColor = CAT_DOT[t.cat] || '#737373';
-  const bgColor = t.ms ? 'var(--card-milestone)' : t.cat === 'medical' ? 'var(--card-medical)' : t.cat === 'finance' || t.cat === 'housing' ? 'var(--card-finance)' : t.cat === 'utility' ? 'var(--card-utility)' : t.cat === 'shopping' ? 'var(--card-shopping)' : 'var(--card-domestic)';
+  const catObj = findCat(f, t.cat);
+  const dotColor = catObj.color;
+  const bgColor = t.ms ? 'var(--card-milestone)' : hexWithAlpha(catObj.color, '18');
   const customBadge = isCustom ? '<span class="custom-badge">власний</span>' : '';
 
   const wrap = document.createElement('div');
@@ -1980,7 +2077,7 @@ function renderAll() {
     Object.entries(catGroups).forEach(([cat, tasks]) => {
       const lbl = document.createElement('div');
       lbl.className = 'slbl';
-      lbl.textContent = CAT_LABELS[cat] || cat;
+      lbl.textContent = findCat(f, cat).label;
       tbody.appendChild(lbl);
       tasks.forEach(t => renderTask(f, t, tbody));
     });
@@ -1997,10 +2094,24 @@ function renderAll() {
     customNoSec.forEach(t => renderTask(f, t, tbody));
   }
 
+  renderLegend();
   updateStats();
   updateBudgetDash();
   renderNotes();
   if (dfActive) applyDateFilter();
+}
+
+function renderLegend() {
+  const wrap = document.getElementById('legendPills');
+  if (!wrap) return;
+  const f = curFolder();
+  wrap.innerHTML = '';
+  (f.categories || []).forEach(c => {
+    const div = document.createElement('div');
+    div.className = 'li';
+    div.innerHTML = `<div class="ld" style="background:${esc(c.color)}"></div>${esc(c.label)}`;
+    wrap.appendChild(div);
+  });
 }
 
 function updateStats() {
@@ -2058,10 +2169,11 @@ function om(id) {
   mcp.innerHTML = '';
   f.categories.forEach(c => {
     const p = document.createElement('div');
-    p.className = 'pill' + (c === mCat ? ' active' : '');
-    p.dataset.c = c;
-    p.textContent = CAT_LABELS[c] || c;
-    p.onclick = () => { mCat = c; document.querySelectorAll('#mCatPills .pill').forEach(x => x.classList.toggle('active', x.dataset.c === c)); };
+    p.className = 'pill' + (c.id === mCat ? ' active' : '');
+    p.dataset.c = c.id;
+    p.textContent = c.label;
+    p.style.setProperty('--cat-color', c.color);
+    p.onclick = () => { mCat = c.id; document.querySelectorAll('#mCatPills .pill').forEach(x => x.classList.toggle('active', x.dataset.c === c.id)); };
     mcp.appendChild(p);
   });
   document.getElementById('mT').value = t.label;
@@ -2113,7 +2225,7 @@ function sm() {
 // ═══════════════════════════════════
 function openAdd() {
   const f = curFolder();
-  addCat = f.categories[0] || 'medical';
+  addCat = (f.categories[0] && f.categories[0].id) || 'milestone';
   addSec = f.sections[0]?.id || '';
 
   // Build cat pills
@@ -2121,10 +2233,11 @@ function openAdd() {
   cp.innerHTML = '';
   f.categories.forEach(c => {
     const p = document.createElement('div');
-    p.className = 'pill' + (c === addCat ? ' active' : '');
-    p.dataset.c = c;
-    p.textContent = CAT_LABELS[c] || c;
-    p.onclick = () => { addCat = c; document.querySelectorAll('#catPills .pill').forEach(x => x.classList.toggle('active', x.dataset.c === c)); };
+    p.className = 'pill' + (c.id === addCat ? ' active' : '');
+    p.dataset.c = c.id;
+    p.textContent = c.label;
+    p.style.setProperty('--cat-color', c.color);
+    p.onclick = () => { addCat = c.id; document.querySelectorAll('#catPills .pill').forEach(x => x.classList.toggle('active', x.dataset.c === c.id)); };
     cp.appendChild(p);
   });
 
@@ -2385,7 +2498,7 @@ function addFolder() {
   const color = colors[DB.folders.length % colors.length];
   DB.folders.push({
     id, name, emoji: selEmoji, color,
-    categories: ['finance','domestic','milestone'],
+    categories: [catFromDefault('finance'), catFromDefault('domestic'), catFromDefault('milestone')],
     sections: [{ id: 'main', name: 'Загальні кроки', sub: '' }],
     tasks: [],
     state: {}
@@ -2448,7 +2561,10 @@ function rg() {
     const bL = ((task.s - 1) / WEEKS * 100).toFixed(2);
     const bW = Math.max((task.e - task.s + 1) / WEEKS * 100, 1.2).toFixed(2);
     const lc = [task.ms ? 'mslbl' : '', done ? 'donelbl' : ''].filter(Boolean).join(' ');
-    const bc = ['gbar', 'cat-' + task.cat, done ? 'done' : ''].filter(Boolean).join(' ');
+    const bc = ['gbar', done ? 'done' : ''].filter(Boolean).join(' ');
+    const gcat = findCat(f, task.cat);
+    const gBg = task.ms ? 'var(--card-milestone)' : hexWithAlpha(gcat.color, '2A');
+    const gBrd = task.ms ? 'var(--cat-milestone)' : gcat.color;
     const note = t.note;
     const np = note ? ' — ' + note.slice(0, 30) + (note.length > 30 ? '…' : '') : '';
     let spentBar = '';
@@ -2456,7 +2572,7 @@ function rg() {
       const sp = Math.min(t.spent / t.est * 100, 100).toFixed(1);
       spentBar = `<div class="gcost ${t.spent > t.est ? 'over' : 'spent'}" style="left:${bL}%;width:${(parseFloat(bW) * parseFloat(sp) / 100).toFixed(2)}%"></div>`;
     }
-    h += `<div class="grow"><div class="glbl ${lc}" onclick="om('${task.id}')" title="${esc(t.label + np)}">${esc(t.label)}</div><div class="gtrack">${spentBar}<div class="${bc}" style="left:${bL}%;width:${bW}%;min-width:5px" onclick="om('${task.id}')" data-tt="${esc(t.label + (t.note ? '\n' + t.note : ''))}">${parseFloat(bW) > 5 ? (task.s === task.e ? 'тиж.' + task.s : task.s + '–' + task.e) : ''}</div></div></div>`;
+    h += `<div class="grow"><div class="glbl ${lc}" onclick="om('${task.id}')" title="${esc(t.label + np)}">${esc(t.label)}</div><div class="gtrack">${spentBar}<div class="${bc}" style="left:${bL}%;width:${bW}%;min-width:5px;background:${gBg};border-color:${gBrd};color:var(--ink);" onclick="om('${task.id}')" data-tt="${esc(t.label + (t.note ? '\n' + t.note : ''))}">${parseFloat(bW) > 5 ? (task.s === task.e ? 'тиж.' + task.s : task.s + '–' + task.e) : ''}</div></div></div>`;
   });
 
   h += `</div><div class="g-bottom"><label>📅 Дата початку:</label><input type="date" value="${ds || ''}" onchange="setSt(this.value)"></div>`;
@@ -2465,10 +2581,10 @@ function rg() {
 
 function setSt(v) { localStorage.setItem('baby-start', v); rg(); }
 
-function bgc(e, id) { if (e.target === document.getElementById(id)) { if (id === 'mbg') cm(); else if (id === 'addBg') closeAdd(); else if (id === 'folderBg') closeFolderModal(); } }
+function bgc(e, id) { if (e.target === document.getElementById(id)) { if (id === 'mbg') cm(); else if (id === 'addBg') closeAdd(); else if (id === 'folderBg') closeFolderModal(); else if (id === 'catMgrBg') closeCatManager(); } }
 
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') { cm(); closeAdd(); closeDelete(); closeFolderModal(); }
+  if (e.key === 'Escape') { cm(); closeAdd(); closeDelete(); closeFolderModal(); closeCatManager(); }
   if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') { if (document.getElementById('mbg').classList.contains('open')) sm(); else if (document.getElementById('addBg').classList.contains('open')) addStep(); }
 });
 
@@ -2533,6 +2649,128 @@ function toggleTheme(){
   const next = cur === 'dark' ? 'light' : 'dark';
   document.documentElement.setAttribute('data-theme', next);
   try{localStorage.setItem('kokohome-theme', next);}catch(_){}
+}
+
+// ═══════════════════════════════════
+// CATEGORY MANAGER
+// ═══════════════════════════════════
+let cmgrDraft = null; // working copy of categories
+
+function openCatManager() {
+  const f = curFolder();
+  if (!f) return;
+  cmgrDraft = f.categories.map(c => ({ ...c }));
+  renderCatMgrList();
+  document.getElementById('catMgrBg').classList.add('open');
+}
+
+function closeCatManager() {
+  document.getElementById('catMgrBg').classList.remove('open');
+  cmgrDraft = null;
+}
+
+function renderCatMgrList() {
+  const list = document.getElementById('catMgrList');
+  list.innerHTML = '';
+  cmgrDraft.forEach((c, idx) => {
+    const row = document.createElement('div');
+    row.className = 'cat-mgr-row';
+    row.innerHTML = `
+      <label class="cat-swatch" style="background:${esc(c.color)}" title="Клікни щоб змінити колір">
+        <input type="color" value="${esc(c.color)}" data-idx="${idx}" data-field="color">
+      </label>
+      <input type="text" class="cat-label-in" value="${esc(c.label)}" placeholder="Назва категорії" data-idx="${idx}" data-field="label">
+      <button class="cat-del-btn" data-idx="${idx}" title="Видалити" aria-label="Видалити категорію">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M1 1l10 10M11 1L1 11"/></svg>
+      </button>
+    `;
+    list.appendChild(row);
+  });
+  // Bind field updates
+  list.querySelectorAll('input[data-field]').forEach(inp => {
+    inp.addEventListener('input', () => {
+      const idx = parseInt(inp.dataset.idx);
+      const field = inp.dataset.field;
+      if (cmgrDraft[idx]) {
+        cmgrDraft[idx][field] = inp.value;
+        if (field === 'color') {
+          const sw = inp.closest('.cat-swatch');
+          if (sw) sw.style.background = inp.value;
+        }
+      }
+    });
+  });
+  // Bind delete
+  list.querySelectorAll('.cat-del-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const idx = parseInt(btn.dataset.idx);
+      cmgrDel(idx);
+    });
+  });
+}
+
+function cmgrAdd() {
+  const usedIds = new Set(cmgrDraft.map(c => c.id));
+  let base = 'cat', n = 1;
+  while (usedIds.has(base + n)) n++;
+  cmgrDraft.push({ id: base + n, label: 'Нова категорія', color: '#8B6CC9' });
+  renderCatMgrList();
+}
+
+function cmgrDel(idx) {
+  if (cmgrDraft.length <= 1) {
+    alert('Має бути хоча б одна категорія.');
+    return;
+  }
+  const c = cmgrDraft[idx];
+  const f = curFolder();
+  const usedBy = f.tasks.filter(t => {
+    const st = f.state[t.id] || {};
+    const cat = st.cat ?? t.cat;
+    return cat === c.id;
+  }).length;
+  if (usedBy > 0) {
+    if (!confirm(`Категорія "${c.label}" використовується у ${usedBy} кроках. Видалити її? (Ці кроки залишаться без категорії.)`)) return;
+  }
+  cmgrDraft.splice(idx, 1);
+  renderCatMgrList();
+}
+
+function saveCatManager() {
+  if (!cmgrDraft || cmgrDraft.length === 0) {
+    alert('Має бути хоча б одна категорія.');
+    return;
+  }
+  // Validate labels
+  const bad = cmgrDraft.find(c => !c.label || !c.label.trim());
+  if (bad) {
+    alert('У всіх категорій має бути назва.');
+    return;
+  }
+  const f = curFolder();
+  const oldIds = new Set(f.categories.map(c => c.id));
+  const newIds = new Set(cmgrDraft.map(c => c.id));
+  // Clear cat on tasks whose category was deleted
+  const removedIds = [...oldIds].filter(id => !newIds.has(id));
+  if (removedIds.length) {
+    f.tasks.forEach(t => {
+      const st = f.state[t.id] || {};
+      const cat = st.cat ?? t.cat;
+      if (removedIds.includes(cat)) {
+        f.state[t.id] = { ...st, cat: null };
+      }
+    });
+  }
+  // Save trimmed categories
+  f.categories = cmgrDraft.map(c => ({
+    id: c.id,
+    label: c.label.trim(),
+    color: c.color
+  }));
+  saveDB(DB);
+  closeCatManager();
+  renderAll();
+  if (curView === 'timeline') rg();
 }
 
 // ═══════════════════════════════════
