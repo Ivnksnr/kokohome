@@ -1146,6 +1146,99 @@ body{
   .content{padding:16px;}
 }
 
+/* ═══════════════════════════════════════════════
+   MOBILE RESPONSIVE ENHANCEMENTS
+   ═══════════════════════════════════════════════ */
+
+/* Touch devices — reveal hover-only controls, enlarge tap targets */
+@media (hover: none) and (pointer: coarse){
+  .row-btns{opacity:1 !important;}
+  .fb .edit-folder-btn,
+  .fb .del-folder-btn{opacity:.85;}
+  .ibtn{width:32px;height:32px;}
+  .cb{width:22px;height:22px;}
+  .ck{width:11px;height:11px;}
+  .theme-toggle{width:36px;height:36px;}
+  .cat-mgr-btn{width:34px;height:34px;}
+  .df-toggle-btn{min-height:34px;}
+  .edit-folder-btn,.del-folder-btn{width:26px;height:26px;}
+  .cpick,.epick{min-width:40px;min-height:40px;}
+  .legend-row,#timelineView .content{-webkit-overflow-scrolling:touch;}
+  /* drag-to-reorder is a desktop affordance — hide handle on touch */
+  .drag-handle{display:none;}
+}
+
+/* Phones ≤600px — layout compaction */
+@media (max-width:600px){
+  /* Topbar: tighter; long titles truncate instead of shoving the toggle off */
+  .tb{padding:0 14px;gap:8px;height:56px;}
+  .tb-title{font-size:17px;flex:1 1 auto;min-width:0;overflow:hidden;}
+  .tb-title span{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .vtoggle{margin-left:8px;flex-shrink:0;}
+  .vbtn{padding:6px 9px;font-size:12px;}
+
+  .content{padding:14px 14px 48px;}
+  .two-pane{gap:16px;}
+
+  /* Budget: 2 columns is more legible than 3 on a phone */
+  .bgrid{grid-template-columns:repeat(2,1fr);}
+  .bstat{border-right:1px solid var(--border);}
+  .bstat:nth-child(2n){border-right:none;}
+  .bstat:nth-child(n+3){border-top:1px solid var(--border);}
+  .bstat-val{font-size:19px;}
+  .bdash-hdr{padding:14px 16px 10px;}
+  .bdash-hdr h3{font-size:16px;}
+
+  .thdr{padding:12px 14px;}
+  .thdr h2{font-size:16px;}
+  .tbody{padding:12px 14px 14px;}
+
+  /* Task cards: more room for the title, compact cost column */
+  .task-main-row{gap:8px;padding:11px 12px;}
+  .cost-right{min-width:72px;padding-left:8px;}
+  .cost-num{font-size:13px;}
+
+  /* Legend: hide scrollbar, keep horizontal swipe */
+  .legend-row{gap:10px;padding:8px 2px;margin-bottom:12px;scrollbar-width:none;}
+  .legend-row::-webkit-scrollbar{display:none;}
+
+  /* iOS: inputs ≥16px prevent auto-zoom on focus */
+  .mf input,.mf textarea,.notes-textarea,#curSel,input[type=date]{font-size:16px;}
+
+  /* Modals slide up as bottom sheets */
+  .mbg{align-items:flex-end;padding:0;}
+  .mbg .modal{
+    max-width:none;width:100%;
+    border-radius:18px 18px 0 0;
+    padding:20px 18px calc(20px + env(safe-area-inset-bottom));
+    max-height:88vh;
+    animation:sheetUp .26s cubic-bezier(.32,.72,0,1);
+  }
+  .modal h3{font-size:18px;}
+  .del-confirm{padding:20px;}
+
+  /* Timeline: swipe hint (the chart itself stays horizontally scrollable) */
+  #timelineView .content::before{
+    content:'← гортайте таймлайн →';
+    display:block;position:sticky;left:0;
+    font-size:11px;color:var(--ink3);
+    text-align:center;padding-bottom:8px;
+  }
+}
+@keyframes sheetUp{
+  from{transform:translateY(100%)}
+  to{transform:translateY(0)}
+}
+
+/* Small phones ≤400px — final tightening */
+@media (max-width:400px){
+  .tb-title{font-size:16px;}
+  .vbtn{padding:6px 7px;}
+  .bstat-val{font-size:17px;}
+  .content{padding:12px 12px 40px;}
+  .modal h3{font-size:17px;}
+}
+
 </style>
 </head>
 <body>
