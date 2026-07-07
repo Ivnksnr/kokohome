@@ -489,7 +489,8 @@ body{
 .notes-textarea:focus{border-color:var(--primary);}
 
 @media(max-width:900px){
-  .two-pane{flex-direction:column;}
+  .two-pane{flex-direction:column;align-items:stretch;}
+  .pane-left{width:100%;min-width:0;}
   .pane-right{width:100%;position:static;}
   .notes-panel .notes-hdr{cursor:pointer;}
   .notes-panel .notes-hdr::after{
