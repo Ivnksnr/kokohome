@@ -2,7 +2,7 @@
 <html lang="uk">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>KOKOHOME</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Google+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -189,6 +189,9 @@ body{
   display:flex;
   font-feature-settings:"cv11","ss01";
   -webkit-font-smoothing:antialiased;
+  -webkit-text-size-adjust:100%;
+  text-size-adjust:100%;
+  -webkit-tap-highlight-color:transparent;
 }
 
 /* === SIDEBAR (Figma 129:4 minimalistic) === */
@@ -1166,6 +1169,17 @@ body{
   .legend-row,#timelineView .content{-webkit-overflow-scrolling:touch;}
   /* drag-to-reorder is a desktop affordance — hide handle on touch */
   .drag-handle{display:none;}
+  /* viewport-fit=cover: keep content clear of the notch in landscape (env()=0 elsewhere) */
+  .main{padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right);}
+  .sb{padding-left:env(safe-area-inset-left);}
+  /* bottom-sheet / sidebar scroll must not chain to the page behind */
+  .modal,.sb{overscroll-behavior:contain;}
+  /* tap feedback — hover states never fire on touch */
+  .fb:active{background:#EDEDED;}
+  .ibtn:active,.btnc:active,.theme-toggle:active,.cat-mgr-btn:active,.notes-edit-btn:active,.notes-copy-btn:active{background:var(--bg-active);}
+  .btns:active,.add-btn:active,.add-btn-mini:active{opacity:.8;}
+  .pill:active{border-color:var(--border-mid);}
+  .card:active{border-color:rgba(0,0,0,.12);}
 }
 
 /* Phones ≤600px — layout compaction */
