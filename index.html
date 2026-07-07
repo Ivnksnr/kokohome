@@ -1898,15 +1898,16 @@ function catFromDefault(cid) {
   return { id: cid, label: cleanLabel, color: CAT_DOT[cid] || '#737373' };
 }
 function findCat(folder, catId) {
-  if (!folder || !Array.isArray(folder.categories)) return catFromDefault(catId || 'milestone');
-  const found = folder.categories.find(c => c && c.id === catId);
-  return found || catFromDefault(catId || (folder.categories[0] && folder.categories[0].id) || 'milestone');
+  const cats = folder && Array.isArray(folder.categories) ? folder.categories : [];
+  const found = catId ? cats.find(c => c && c.id === catId) : null;
+  return found || { id: '', label: 'Без категорії', color: '#9AA0A6' };
 }
 function migrateCategories(folder) {
-  if (!Array.isArray(folder.categories) || folder.categories.length === 0) {
+  if (!Array.isArray(folder.categories)) {
     folder.categories = [catFromDefault('milestone')];
     return true;
   }
+  if (folder.categories.length === 0) return false; // порожній список — легальний стан
   if (typeof folder.categories[0] === 'string') {
     folder.categories = folder.categories.map(cid => catFromDefault(cid));
     return true;
@@ -2183,10 +2184,12 @@ function renderAll() {
     secTasks.forEach(t => { if (!catGroups[t.cat]) catGroups[t.cat] = []; catGroups[t.cat].push(t); });
     const tbody = document.getElementById('sec-body-' + sec.id);
     Object.entries(catGroups).forEach(([cat, tasks]) => {
-      const lbl = document.createElement('div');
-      lbl.className = 'slbl';
-      lbl.textContent = findCat(f, cat).label;
-      tbody.appendChild(lbl);
+      if (f.categories && f.categories.length > 0) {
+        const lbl = document.createElement('div');
+        lbl.className = 'slbl';
+        lbl.textContent = findCat(f, cat).label;
+        tbody.appendChild(lbl);
+      }
       tasks.forEach(t => renderTask(f, t, tbody));
     });
   });
@@ -2275,6 +2278,8 @@ function om(id) {
   mCat = t.cat;
   const mcp = document.getElementById('mCatPills');
   mcp.innerHTML = '';
+  const mcpField = mcp.closest('.mf');
+  if (mcpField) mcpField.style.display = f.categories.length ? '' : 'none';
   f.categories.forEach(c => {
     const p = document.createElement('div');
     p.className = 'pill' + (c.id === mCat ? ' active' : '');
@@ -2333,12 +2338,14 @@ function sm() {
 // ═══════════════════════════════════
 function openAdd() {
   const f = curFolder();
-  addCat = (f.categories[0] && f.categories[0].id) || 'milestone';
+  addCat = (f.categories[0] && f.categories[0].id) || null;
   addSec = f.sections[0]?.id || '';
 
-  // Build cat pills
+  // Build cat pills (hide the field entirely when folder has no tags)
   const cp = document.getElementById('catPills');
   cp.innerHTML = '';
+  const cpField = cp.closest('.mf');
+  if (cpField) cpField.style.display = f.categories.length ? '' : 'none';
   f.categories.forEach(c => {
     const p = document.createElement('div');
     p.className = 'pill' + (c.id === addCat ? ' active' : '');
@@ -2826,10 +2833,6 @@ function cmgrAdd() {
 }
 
 function cmgrDel(idx) {
-  if (cmgrDraft.length <= 1) {
-    alert('Має бути хоча б одна категорія.');
-    return;
-  }
   const c = cmgrDraft[idx];
   const f = curFolder();
   const usedBy = f.tasks.filter(t => {
@@ -2845,10 +2848,7 @@ function cmgrDel(idx) {
 }
 
 function saveCatManager() {
-  if (!cmgrDraft || cmgrDraft.length === 0) {
-    alert('Має бути хоча б одна категорія.');
-    return;
-  }
+  if (!cmgrDraft) return;
   // Validate labels
   const bad = cmgrDraft.find(c => !c.label || !c.label.trim());
   if (bad) {
