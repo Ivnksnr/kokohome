@@ -1908,17 +1908,37 @@ function migrateCategories(folder) {
     return true;
   }
   if (folder.categories.length === 0) return false; // порожній список — легальний стан
+  let fixed = false;
   if (typeof folder.categories[0] === 'string') {
     folder.categories = folder.categories.map(cid => catFromDefault(cid));
-    return true;
+    fixed = true;
   }
   // Ensure all entries have required fields
-  let fixed = false;
   folder.categories = folder.categories.map(c => {
     if (!c || typeof c !== 'object') { fixed = true; return catFromDefault('milestone'); }
     if (!c.id || !c.color || !c.label) { fixed = true; return { ...catFromDefault(c.id || 'milestone'), ...c }; }
     return c;
   });
+  // Самолікування: прибрати дублікати (за id, потім за назвою) і перемапити кроки на збережений тег
+  const seenIds = new Set(), seenLabels = new Map(), remap = {}, deduped = [];
+  for (const c of folder.categories) {
+    const key = (c.label || '').trim().toLowerCase();
+    if (seenIds.has(c.id)) { fixed = true; continue; }
+    if (key && seenLabels.has(key)) { remap[c.id] = seenLabels.get(key); fixed = true; continue; }
+    seenIds.add(c.id);
+    if (key) seenLabels.set(key, c.id);
+    deduped.push(c);
+  }
+  if (deduped.length !== folder.categories.length) {
+    folder.categories = deduped;
+    if (Object.keys(remap).length) {
+      (folder.tasks || []).forEach(t => { if (remap[t.cat]) t.cat = remap[t.cat]; });
+      Object.keys(folder.state || {}).forEach(id => {
+        const st = folder.state[id];
+        if (st && remap[st.cat]) st.cat = remap[st.cat];
+      });
+    }
+  }
   return fixed;
 }
 function hexWithAlpha(hex, alphaHex) {
